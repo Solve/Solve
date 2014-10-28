@@ -1,0 +1,22 @@
+{
+    "name": "solve/solve",
+    "type": "library",
+    "description": " - [ Solve Framework ]",
+    "keywords": ["solve","framework","kernel","cmf",],
+    "homepage": "http://github.com/Solve/Solve",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Alexandr Viniychuk",
+            "email": "alexandr.viniychuk@icloud.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.0",
+        "solve/storage": "*"
+    },
+    "autoload": {
+        "psr-0": { "Solve\\Solve\\": "" }
+    },
+    "target-dir": "Solve/Solve"
+}
