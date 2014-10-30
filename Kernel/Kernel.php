@@ -10,20 +10,49 @@
 namespace Solve\Kernel;
 
 
+use Solve\DependencyInjection\DependencyContainer;
+
 class Kernel {
 
     /**
      * @var Kernel
      */
-    private static $_mainInstance;
+    private static $_projectInstance;
 
+    /**
+     * @var Environment
+     */
+    private $_environment;
+
+    /**
+     * @var DependencyContainer
+     */
     private $_dependencyContainer;
 
-    public static function getMainInstance(DependencyContainer $dc = null) {
-        if (empty(self::$_mainInstance)) {
-            self::$_mainInstance = new static($dc);
+    public function __construct(DependencyContainer $dc = null) {
+        $this->_dependencyContainer = $dc;
+        $this->_environment         = Environment::createFromContext();
+    }
+
+    public static function getProjectInstance(DependencyContainer $dc = null) {
+        if (empty(self::$_projectInstance)) {
+            self::$_projectInstance = new static($dc);
         }
-        return self::$_mainInstance;
+        return self::$_projectInstance;
+    }
+
+    /**
+     * @return Environment
+     */
+    public function getEnvironment() {
+        return $this->_environment;
+    }
+
+    /**
+     * @param Environment $environment
+     */
+    public function setEnvironment($environment) {
+        $this->_environment = $environment;
     }
 
 }

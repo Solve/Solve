@@ -2,7 +2,7 @@
     "name": "solve/solve",
     "type": "library",
     "description": " - [ Solve Framework ]",
-    "keywords": ["solve","framework","kernel","cmf",],
+    "keywords": ["solve","framework","kernel","cmf"],
     "homepage": "http://github.com/Solve/Solve",
     "license": "MIT",
     "authors": [
@@ -13,7 +13,12 @@
     ],
     "require": {
         "php": ">=5.3.0",
-        "solve/storage": "*"
+        "solve/storage": "*",
+        "solve/di": "*",
+        "solve/router": "*",
+        "solve/slot": "*",
+        "solve/autoloader": "*",
+        "solve/eventdispatcher": "*"
     },
     "autoload": {
         "psr-0": { "Solve\\Solve\\": "" }
