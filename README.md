@@ -7,10 +7,14 @@ Solve Framework Package
 
 
 **Events**
+```
 route.buildRequest
-app.run
-
+route.notFound
+kernel.ready
+```
 
 **DependenciesMethods**
+```
 onKernelBoot
 getEventListeners
+```

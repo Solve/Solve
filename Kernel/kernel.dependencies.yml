@@ -8,3 +8,5 @@ logger:
   className: 'Solve\Logger\Logger'
 kernel:
   className: 'Solve\Kernel\Kernel'
+autoloader:
+  className: 'Solve\Autoloader\Autoloader'

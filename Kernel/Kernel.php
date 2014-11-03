@@ -10,6 +10,7 @@
 namespace Solve\Kernel;
 
 
+use Solve\Autoloader\Autoloader;
 use Solve\Config\ConfigService;
 use Solve\DependencyInjection\DependencyContainer;
 use Solve\Environment\Environment;
@@ -18,6 +19,7 @@ use Solve\Http\Request;
 use Solve\Logger\Logger;
 use Solve\Router\Router;
 use Solve\Storage\YamlStorage;
+use Solve\Utils\Inflector;
 
 class Kernel {
 
@@ -40,11 +42,6 @@ class Kernel {
      * @var EventDispatcher
      */
     private $_eventDispatcher;
-
-    /**
-     * @var Router
-     */
-    private $_router;
 
     public function __construct(DependencyContainer $dc = null) {
         if (empty($dc)) $dc = new DependencyContainer();
@@ -71,8 +68,8 @@ class Kernel {
         $initialDependencies = new YamlStorage(__DIR__ . '/kernel.dependencies.yml');
         $this->_dependencyContainer->addDependencies($initialDependencies);
 
-        $this->_eventDispatcher     = $this->_dependencyContainer->get('eventDispatcher');
-        $this->_router              = $this->_dependencyContainer->get('router');
+        $this->_eventDispatcher = $this->_dependencyContainer->get('eventDispatcher');
+        DC::getAutoloader()->register(false);
         $this->onEnvironmentUpdate();
     }
 
@@ -96,13 +93,13 @@ class Kernel {
     }
 
     public function boot() {
-        foreach($this->_dependencyContainer->getAllDependencies() as $name => $info) {
+        foreach ($this->_dependencyContainer->getAllDependencies() as $name => $info) {
             if (is_callable(array($info['className'], 'onKernelBoot'))) {
                 $this->_dependencyContainer->get($name)->onKernelBoot($this->_dependencyContainer);
             }
             if (is_callable(array($info['className'], 'getEventListeners'))) {
                 $events = $this->_dependencyContainer->get($name)->getEventListeners();
-                foreach($events as $eventName => $params) {
+                foreach ($events as $eventName => $params) {
                     if (!is_array($params)) {
                         $params = array('listener' => $params);
                     }
@@ -118,9 +115,7 @@ class Kernel {
     }
 
     public function process() {
-        $requestEvent = $this->_eventDispatcher->dispatchEvent('route.buildRequest', Request::getIncomeRequest());
-        $this->_router->processRequest($requestEvent->getParameters());
-        $this->_eventDispatcher->dispatchEvent('app.run');
+        $this->_eventDispatcher->dispatchEvent('kernel.ready');
     }
 
     public function run() {
@@ -137,9 +132,12 @@ class Kernel {
 
     /**
      * @param Environment $environment
+     * @return Kernel
      */
     public function setEnvironment($environment) {
         $this->_environment = $environment;
+        $this->onEnvironmentUpdate();
+        return $this;
     }
 
     public function getDependencyContainer() {

@@ -28,7 +28,7 @@ class Environment {
         $environment->setProjectRoot(realpath(__DIR__. '/../../../') . '/');
         $environment->updateFromProjectRoot();
 
-        if (!($timezone = date_default_timezone_get())) {
+        if (!ini_get('date.timezone') || !($timezone = date_default_timezone_get())) {
             $timezone = 'Europe/Kiev';
             date_default_timezone_set($timezone);
         }
