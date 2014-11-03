@@ -108,7 +108,7 @@ class Kernel {
             }
         }
         if (headers_sent()) {
-            DC::getLogger()->add('Cannot start session, headers sent', 'kernel');
+            DC::getLogger()->add('Cannot start session, headers sent', Logger::NAMESPACE_KERNEL);
         } else {
             session_start();
         }

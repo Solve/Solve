@@ -13,9 +13,13 @@ require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../Kernel/Kernel.php';
 require_once __DIR__ . '/../Kernel/DC.php';
 require_once __DIR__ . '/../Application/Application.php';
-require_once __DIR__ . '/../Application/ApplicationRouter.php';
+require_once __DIR__ . '/../Controller/BaseController.php';
+require_once __DIR__ . '/../Controller/ControllerService.php';
 require_once __DIR__ . '/../Router/ApplicationRoute.php';
 require_once __DIR__ . '/../Environment/Environment.php';
+require_once __DIR__ . '/../View/View.php';
+require_once __DIR__ . '/../View/ViewEngine/AbstractViewEngine.php';
+require_once __DIR__ . '/../View/ViewEngine/HtmlViewEngine.php';
 
 use Solve\Config\ConfigService;
 use Solve\Kernel\DC;

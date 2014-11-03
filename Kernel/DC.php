@@ -9,16 +9,16 @@
 
 namespace Solve\Kernel;
 
+use Solve\Application\Application;
 use Solve\Autoloader\Autoloader;
 use Solve\Config\Config;
 use Solve\Config\ConfigService;
-use Solve\Environment\Environment;
 use Solve\EventDispatcher\EventDispatcher;
 use Solve\Logger\Logger;
 use Solve\DependencyInjection\DependencyContainer;
 use Solve\Router\Router;
 use Solve\Storage\ArrayStorage;
-use Solve\Utils\Inflector;
+use Solve\View\View;
 
 /**
  * Class DC
@@ -26,8 +26,10 @@ use Solve\Utils\Inflector;
  *
  * Class DC is a helper class to access main instance of dependency container
  *
+ * @method static Application getApplication() returns logger
  * @method static Logger getLogger() returns logger
  * @method static Router getRouter() returns router
+ * @method static View getView()
  * @method static Autoloader getAutoloader() returns router
  * @method static EventDispatcher getEventDispatcher() returns main instance of event dispatcher
  * @method static Config getProjectConfig($deepKey = null, $defaultValue = null) returns logger
@@ -62,6 +64,10 @@ class DC {
 
     public static function getEnvironment() {
         return Kernel::getMainInstance()->getEnvironment();
+    }
+
+    public static function getContainer() {
+        return self::$_dependencyContainerInstance;
     }
 
     public static function __callStatic($method, $params) {

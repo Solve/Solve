@@ -11,6 +11,7 @@ namespace Solve\Application;
 
 
 use Solve\Config\Config;
+use Solve\Controller\ControllerService;
 use Solve\Http\Request;
 use Solve\Kernel\DC;
 use Solve\Kernel\Kernel;
@@ -19,6 +20,7 @@ use Solve\Router\Router;
 use Solve\Storage\ArrayStorage;
 use Solve\Storage\YamlStorage;
 use Solve\Utils\Inflector;
+use Solve\View\View;
 
 class Application {
 
@@ -27,7 +29,6 @@ class Application {
     private $_root;
     private $_controllersRoot;
 
-    private static $_loadedControllers = array();
     /**
      * @var ApplicationRoute
      */
@@ -42,6 +43,7 @@ class Application {
         $this->boot();
         $this->detectApplicationRoute();
         $this->process();
+        $this->render();
     }
 
     public function boot() {
@@ -66,11 +68,19 @@ class Application {
 
     public function process() {
 
-        if (is_callable('ApplicationController', '_preAction')) {
-            self::getController('ApplicationController')->_preAction();
+        if (ControllerService::isControllerExists('ApplicationController')) {
+            ControllerService::getController('ApplicationController')->_preAction();
         }
-        self::getController($this->_route->getControllerName())->{$this->_route->getActionName()}();
+        ControllerService::safeCall($this->_route->getControllerName(), $this->_route->getActionName());
+        if (ControllerService::isControllerExists('ApplicationController')) {
+            ControllerService::getController('ApplicationController')->_postAction();
+        }
+    }
 
+    public function render() {
+        $view = DC::getView();
+        $view->setTemplatesPath($this->getRoot() . 'Views/');
+        $view->render();
     }
 
     public function detectApplication() {
@@ -103,15 +113,8 @@ class Application {
         }
         $this->_namespace = Inflector::camelize($this->_name);
         DC::getAutoloader()->registerNamespacePath($this->_namespace, DC::getEnvironment()->getApplicationRoot());
+        ControllerService::setActiveNamespace($this->_namespace);
         return $this->_name;
-    }
-
-    public function getController($controllerName) {
-        $fullControllerName = $this->_namespace . '\\Controllers\\' . ucfirst(Inflector::camelize($controllerName));
-        if (empty(self::$_loadedControllers[$fullControllerName])) {
-            self::$_loadedControllers[$fullControllerName] = new $fullControllerName();
-        }
-        return self::$_loadedControllers[$fullControllerName];
     }
 
     /**
@@ -126,6 +129,13 @@ class Application {
      */
     public function getRoot() {
         return $this->_root;
+    }
+
+    /**
+     * @return ApplicationRoute
+     */
+    public function getRoute() {
+        return $this->_route;
     }
 
     public function getEventListeners() {

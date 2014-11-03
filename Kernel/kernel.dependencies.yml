@@ -10,3 +10,5 @@ kernel:
   className: 'Solve\Kernel\Kernel'
 autoloader:
   className: 'Solve\Autoloader\Autoloader'
+view:
+  className: 'Solve\View\View'
