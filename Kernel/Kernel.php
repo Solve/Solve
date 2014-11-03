@@ -10,14 +10,21 @@
 namespace Solve\Kernel;
 
 
+use Solve\Config\ConfigService;
 use Solve\DependencyInjection\DependencyContainer;
+use Solve\Environment\Environment;
+use Solve\EventDispatcher\EventDispatcher;
+use Solve\Http\Request;
+use Solve\Logger\Logger;
+use Solve\Router\Router;
+use Solve\Storage\YamlStorage;
 
 class Kernel {
 
     /**
      * @var Kernel
      */
-    private static $_projectInstance;
+    private static $_mainInstance;
 
     /**
      * @var Environment
@@ -29,16 +36,96 @@ class Kernel {
      */
     private $_dependencyContainer;
 
+    /**
+     * @var EventDispatcher
+     */
+    private $_eventDispatcher;
+
+    /**
+     * @var Router
+     */
+    private $_router;
+
     public function __construct(DependencyContainer $dc = null) {
+        if (empty($dc)) $dc = new DependencyContainer();
+
         $this->_dependencyContainer = $dc;
         $this->_environment         = Environment::createFromContext();
+        $this->_dependencyContainer->setDependencyObject('kernel', $this);
+        $this->loadSystemDependencies();
+        $this->loadUserDependencies();
+        $this->processProjectConfig();
     }
 
-    public static function getProjectInstance(DependencyContainer $dc = null) {
-        if (empty(self::$_projectInstance)) {
-            self::$_projectInstance = new static($dc);
+    public static function getMainInstance(DependencyContainer $dc = null) {
+        if (empty(self::$_mainInstance)) {
+            if (empty($dc)) $dc = new DependencyContainer();
+
+            DC::setInstance($dc);
+            self::$_mainInstance = new static($dc);
         }
-        return self::$_projectInstance;
+        return self::$_mainInstance;
+    }
+
+    protected function loadSystemDependencies() {
+        $initialDependencies = new YamlStorage(__DIR__ . '/kernel.dependencies.yml');
+        $this->_dependencyContainer->addDependencies($initialDependencies);
+
+        $this->_eventDispatcher     = $this->_dependencyContainer->get('eventDispatcher');
+        $this->_router              = $this->_dependencyContainer->get('router');
+        $this->onEnvironmentUpdate();
+    }
+
+    public function onEnvironmentUpdate() {
+        ConfigService::setConfigsPath($this->_environment->getConfigRoot());
+        ConfigService::loadAllConfigs();
+        DC::getLogger()->setLogsPath($this->_environment->getTmpRoot() . 'log');
+    }
+
+    protected function loadUserDependencies() {
+        if (is_file($this->_environment->getUserClassesRoot() . 'user.dependencies.yml')) {
+            $dependencies = new YamlStorage($this->_environment->getUserClassesRoot() . 'user.dependencies.yml');
+            $this->_dependencyContainer->addDependencies($dependencies);
+        }
+    }
+
+    protected function processProjectConfig() {
+        if ($webRoot = DC::getProjectConfig('webRoot')) {
+            $this->_environment->setWebRoot($webRoot);
+        }
+    }
+
+    public function boot() {
+        foreach($this->_dependencyContainer->getAllDependencies() as $name => $info) {
+            if (is_callable(array($info['className'], 'onKernelBoot'))) {
+                $this->_dependencyContainer->get($name)->onKernelBoot($this->_dependencyContainer);
+            }
+            if (is_callable(array($info['className'], 'getEventListeners'))) {
+                $events = $this->_dependencyContainer->get($name)->getEventListeners();
+                foreach($events as $eventName => $params) {
+                    if (!is_array($params)) {
+                        $params = array('listener' => $params);
+                    }
+                    $this->_eventDispatcher->addEventListener($eventName, $params['listener']);
+                }
+            }
+        }
+        if (headers_sent()) {
+            DC::getLogger()->add('Cannot start session, headers sent', 'kernel');
+        } else {
+            session_start();
+        }
+    }
+
+    public function process() {
+        $requestEvent = $this->_eventDispatcher->dispatchEvent('route.buildRequest', Request::getIncomeRequest());
+        $this->_router->processRequest($requestEvent->getParameters());
+        $this->_eventDispatcher->dispatchEvent('app.run');
+    }
+
+    public function run() {
+        $this->boot();
+        $this->process();
     }
 
     /**
@@ -53,6 +140,10 @@ class Kernel {
      */
     public function setEnvironment($environment) {
         $this->_environment = $environment;
+    }
+
+    public function getDependencyContainer() {
+        return $this->_dependencyContainer;
     }
 
 }

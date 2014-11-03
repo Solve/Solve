@@ -7,7 +7,7 @@
  * created: 28.10.14 18:25
  */
 
-namespace Solve\Kernel;
+namespace Solve\Environment;
 
 
 use Solve\Storage\ArrayStorage;
@@ -26,10 +26,7 @@ class Environment {
     public static function createFromContext() {
         $environment = new static();
         $environment->setProjectRoot(realpath(__DIR__. '/../../../') . '/');
-        $environment->setApplicationRoot($environment->getProjectRoot() . 'app/');
-        $environment->setTmpRoot($environment->getProjectRoot() . 'tmp/');
-        $environment->setWebRoot($environment->getProjectRoot() . 'web/');
-        $environment->setUploadRoot($environment->getWebRoot() . 'upload/');
+        $environment->updateFromProjectRoot();
 
         if (!($timezone = date_default_timezone_get())) {
             $timezone = 'Europe/Kiev';
@@ -39,12 +36,32 @@ class Environment {
         return $environment;
     }
 
-    public function setProjectRoot($path) {
+    protected function updateFromProjectRoot() {
+        $this->setApplicationRoot($this->getProjectRoot() . 'app/');
+        $this->setConfigRoot($this->getProjectRoot() . 'config/');
+        $this->setTmpRoot($this->getProjectRoot() . 'tmp/');
+        $this->setUserClassesRoot($this->getProjectRoot() . 'src/classes/');
+        $this->setWebRoot($this->getProjectRoot() . 'web/');
+        $this->setUploadRoot($this->getWebRoot() . 'upload/');
+    }
+
+    public function setProjectRoot($path, $updateOther = false) {
         $this->_vars['roots']['project'] = $path;
+        if ($updateOther) {
+            $this->updateFromProjectRoot();
+        }
     }
 
     public function getProjectRoot() {
         return $this->_vars['roots']['project'];
+    }
+
+    public function setConfigRoot($path) {
+        $this->_vars['roots']['config'] = $path;
+    }
+
+    public function getConfigRoot() {
+        return $this->_vars['roots']['config'];
     }
 
     public function setTmpRoot($path) {
@@ -79,7 +96,13 @@ class Environment {
         return $this->_vars['roots']['upload'];
     }
 
+    public function setUserClassesRoot($path) {
+        $this->_vars['roots']['user_classes'] = $path;
+    }
 
+    public function getUserClassesRoot() {
+        return $this->_vars['roots']['user_classes'];
+    }
 
     public function setTimezone($timezone) {
         $this->_vars['timezone'] = $timezone;

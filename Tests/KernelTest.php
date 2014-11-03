@@ -10,9 +10,13 @@
 namespace Solve\Tests;
 
 require_once __DIR__ . '/../Kernel/Kernel.php';
-require_once __DIR__ . '/../Kernel/Environment.php';
+require_once __DIR__ . '/../Kernel/DC.php';
+require_once __DIR__ . '/../Application/Application.php';
+require_once __DIR__ . '/../Environment/Environment.php';
 require_once __DIR__ . '/../vendor/autoload.php';
 
+use Solve\Config\ConfigService;
+use Solve\Kernel\DC;
 use Solve\Kernel\Kernel;
 
 class KernelTest extends \PHPUnit_Framework_TestCase {
@@ -21,9 +25,14 @@ class KernelTest extends \PHPUnit_Framework_TestCase {
         /**
          * Kernel
          */
-        $kernel = Kernel::getProjectInstance();
+        $kernel = Kernel::getMainInstance();
         $env = $kernel->getEnvironment();
-        var_dump($env);die();
+        $this->assertEquals(realpath(__DIR__ . '/../../../') . '/', $env->getProjectRoot(), 'root detected correctly');
+        $kernel->getEnvironment()->setProjectRoot(realpath(__DIR__ . '/project/') . '/', true);
+        $kernel->onEnvironmentUpdate();
+        $this->assertEquals('Test project', DC::getProjectConfig('name'));
+
+        $kernel->run();
     }
 
 }

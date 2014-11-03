@@ -13,12 +13,14 @@
     ],
     "require": {
         "php": ">=5.3.0",
-        "solve/storage": "*",
+        "solve/config": "*",
         "solve/di": "*",
         "solve/router": "*",
         "solve/slot": "*",
         "solve/autoloader": "*",
-        "solve/eventdispatcher": "*"
+        "solve/eventdispatcher": "*",
+        "solve/logger": ">=1.0.0",
+        "solve/database": "*"
     },
     "autoload": {
         "psr-0": { "Solve\\Solve\\": "" }

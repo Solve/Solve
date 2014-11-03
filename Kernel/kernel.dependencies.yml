@@ -1,0 +1,10 @@
+router:
+  className: 'Solve\Router\Router'
+eventDispatcher:
+  className: 'Solve\EventDispatcher\EventDispatcher'
+application:
+  className: 'Solve\Application\Application'
+logger:
+  className: 'Solve\Logger\Logger'
+kernel:
+  className: 'Solve\Kernel\Kernel'
