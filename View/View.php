@@ -11,13 +11,11 @@ namespace Solve\View;
 
 
 use Solve\Http\Response;
-use Solve\Router\Route;
 use Solve\Storage\ArrayStorage;
 use Solve\Storage\SessionStorage;
-use Solve\Utils\Inflector;
-use Solve\View\ViewEngine\AbstractViewEngine;
+use Solve\View\RenderEngine\BaseRenderEngine;
 
-class View {
+class View extends \stdClass {
 
     const FORMAT_HTML    = 'html';
     const FORMAT_JSON    = 'json';
@@ -48,26 +46,32 @@ class View {
     protected $_templateName;
     protected $_layoutName;
     protected $_responseFormat = self::FORMAT_HTML;
+    protected $_renderEngine = 'Base';
 
     public function __construct() {
         $this->_vars       = new ArrayStorage();
         $this->_formatVars = new ArrayStorage();
         $this->_flash      = new SessionStorage(array(), 'view_flash');
         $this->_response   = new Response();
+//        $this->_responseFormat = DC::getRouter()->getCurrentRequest()->get
     }
 
     public function render($templateName = null) {
         if ($templateName) $this->setTemplateName($templateName);
-        $viewEngineName = 'Solve\\View\\ViewEngine\\' . ucfirst($this->_responseFormat) . 'ViewEngine';
+        $viewEngineName = 'Solve\\View\\RenderEngine\\' . ucfirst($this->_renderEngine) . 'RenderEngine';
         if (!class_exists($viewEngineName)) {
             throw new \Exception('View engine '.$viewEngineName.' not found');
         }
         /**
-         * @var AbstractViewEngine $viewEngine
+         * @var BaseRenderEngine $viewEngine
          */
         $viewEngine = new $viewEngineName($this);
         $viewEngine->configure();
-        $viewEngine->render();
+        $renderMethod = 'render' . ucfirst($this->_responseFormat);
+        if (!is_callable(array($viewEngine, $renderMethod))) {
+            throw new \Exception('No render method for '.$this->_responseFormat .' in engine '.$this->_renderEngine);
+        }
+        call_user_func(array($viewEngine, $renderMethod));
     }
 
     /**
@@ -86,12 +90,13 @@ class View {
         return $this->_templateName;
     }
 
-    public function &__get($key) {
-        return $this->_vars->get($key);
+    public function __get($key) {
+        return $this->_vars->$key;
     }
 
     public function __set($key, $value) {
         $this->_vars->set($key, $value);
+        return $this;
     }
 
     /**
@@ -120,6 +125,20 @@ class View {
      */
     public function setResponseFormat($responseFormat) {
         $this->_responseFormat = $responseFormat;
+    }
+
+    /**
+     * @return string
+     */
+    public function getRenderEngine() {
+        return $this->_renderEngine;
+    }
+
+    /**
+     * @param string $renderEngine
+     */
+    public function setRenderEngine($renderEngine) {
+        $this->_renderEngine = $renderEngine;
     }
 
     /**

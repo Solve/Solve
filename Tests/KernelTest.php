@@ -18,8 +18,8 @@ require_once __DIR__ . '/../Controller/ControllerService.php';
 require_once __DIR__ . '/../Router/ApplicationRoute.php';
 require_once __DIR__ . '/../Environment/Environment.php';
 require_once __DIR__ . '/../View/View.php';
-require_once __DIR__ . '/../View/ViewEngine/AbstractViewEngine.php';
-require_once __DIR__ . '/../View/ViewEngine/HtmlViewEngine.php';
+require_once __DIR__ . '/../View/RenderEngine/BaseRenderEngine.php';
+require_once __DIR__ . '/../View/RenderEngine/SlotRenderEngine.php';
 
 use Solve\Config\ConfigService;
 use Solve\Kernel\DC;

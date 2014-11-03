@@ -10,14 +10,15 @@
 namespace Solve\Controller;
 
 
-use Solve\Storage\ArrayStorage;
+use Solve\Kernel\DC;
+use Solve\View\View;
 
 class BaseController {
 
     public $view;
 
     public function __construct() {
-        $this->view = new ArrayStorage();
+        $this->view = DC::getView();
     }
 
     public function _preAction() {
