@@ -33,7 +33,7 @@ class KernelTest extends \PHPUnit_Framework_TestCase {
         /**
          * Kernel
          */
-        $kernel = Kernekl::getMainInstance();
+        $kernel = Kernel::getMainInstance();
         $env = $kernel->getEnvironment();
         $this->assertEquals(realpath(__DIR__ . '/../../../') . '/', $env->getProjectRoot(), 'root detected correctly');
         $kernel->getEnvironment()->setProjectRoot(realpath(__DIR__ . '/project/') . '/', true);
