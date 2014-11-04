@@ -1,0 +1,4 @@
+Hello, {{ name }}!
+
+it's inner template content:
+{{ innerTemplateContent }}

@@ -12,3 +12,5 @@ autoloader:
   className: 'Solve\Autoloader\Autoloader'
 view:
   className: 'Solve\View\View'
+response:
+  className: 'Solve\Router\Response'

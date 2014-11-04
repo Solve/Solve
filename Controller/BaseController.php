@@ -16,9 +16,23 @@ use Solve\View\View;
 class BaseController {
 
     public $view;
+    public $router;
 
     public function __construct() {
         $this->view = DC::getView();
+        $this->router = DC::getRouter();
+    }
+
+    public function redirectTo($relativeUrl) {
+
+    }
+
+    public function redirectSelf() {
+
+    }
+
+    public function forwardToRoute($routeName, $params) {
+
     }
 
     public function _preAction() {

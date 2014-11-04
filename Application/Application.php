@@ -41,15 +41,30 @@ class Application {
     public function run() {
         $this->detectApplication();
         $this->boot();
-        $this->detectApplicationRoute();
+        $this->configure();
         $this->process();
-        $this->render();
     }
 
     public function boot() {
         $this->_root            = DC::getEnvironment()->getApplicationRoot() . $this->_config['path'];
         $this->_controllersRoot = $this->_root . 'controllers/';
         $this->_config          = new YamlStorage($this->getRoot() . 'config.yml');
+        $this->detectApplicationRoute();
+    }
+
+    public function configure() {
+        DC::getView()->setTemplatesPath($this->getRoot() . 'Views/')->setRenderEngine('Slot');
+    }
+
+    public function process() {
+        if (ControllerService::isControllerExists('ApplicationController')) {
+            ControllerService::getController('ApplicationController')->_preAction();
+        }
+        ControllerService::safeCall($this->_route->getControllerName(), $this->_route->getActionName());
+        if (ControllerService::isControllerExists('ApplicationController')) {
+            ControllerService::getController('ApplicationController')->_postAction();
+        }
+        DC::getView()->render();
     }
 
     protected function detectApplicationRoute() {
@@ -66,23 +81,6 @@ class Application {
         $this->_route = new ApplicationRoute($route);
     }
 
-    public function process() {
-
-        if (ControllerService::isControllerExists('ApplicationController')) {
-            ControllerService::getController('ApplicationController')->_preAction();
-        }
-        ControllerService::safeCall($this->_route->getControllerName(), $this->_route->getActionName());
-        if (ControllerService::isControllerExists('ApplicationController')) {
-            ControllerService::getController('ApplicationController')->_postAction();
-        }
-    }
-
-    public function render() {
-        $view = DC::getView();
-        $view->setTemplatesPath($this->getRoot() . 'Views/');
-        $view->setRenderEngine('Slot');
-        $view->render();
-    }
 
     public function detectApplication() {
         DC::getEventDispatcher()->dispatchEvent('route.buildRequest', Request::getIncomeRequest());

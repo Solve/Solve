@@ -31,11 +31,12 @@ class SlotRenderEngine extends BaseRenderEngine {
     public function renderHtml() {
         $template = $this->_view->getTemplateName() . '.slot';
 
+        $vars = $this->_view->getCombinedVars();
         if (($layout = $this->_view->getLayoutTemplate())) {
-            $this->_view->setVar('innerContent', $this->_slot->fetchTemplate($template));
+            $vars['innerTemplateContent'] = $this->_slot->fetchTemplate($template, $vars);
             $template = $layout  . '.slot';
         }
-        echo $this->_slot->fetchTemplate($template, $this->_view->getVars());
+        echo $this->_slot->fetchTemplate($template, $vars);
     }
 
     public function detectViewTemplate() {

@@ -30,22 +30,47 @@ class BaseRenderEngine {
     }
 
     public function renderJson() {
-        if (!headers_sent()) {
-            header('Content-type: text/json; encoding=utf8;');
-        }
+        $this->_view->getResponse()->getHeaders()->add('Content-type', 'text/json');
         if (defined('JSON_UNESCAPED_UNICODE')) {
-            echo json_encode($this->_view->getVars()->getArray(), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+            echo json_encode($this->_view->getCombinedVars()->getArray(), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
         } else {
-            echo json_encode($this->_view->getVars()->getArray());
+            echo json_encode($this->_view->getCombinedVars()->getArray());
         }
     }
 
     public function renderXml() {
-        echo "Default XML renderer";
+        $this->_view->getResponse()->getHeaders()->add('Content-type', 'text/xml');
+        $xml = new \SimpleXMLElement("<?xml version=\"1.0\"?><vars></vars>");
+        $xml = $this->array2xml($this->_view->getCombinedVars(), $xml);
+        if (!headers_sent()) {
+            header('Content-type: text/xml; encoding=utf8;');
+        }
+        echo $xml->asXML();
+
+    }
+
+    /**
+     * @param $array
+     * @param \SimpleXMLElement $xmlNode
+     * @return \SimpleXMLElement
+     */
+    private function array2xml($array, $xmlNode) {
+        foreach ($array as $key => $value) {
+            if (is_array($value)) {
+                if (!is_numeric($key)) {
+                    $this->array2xml($value, $xmlNode->addChild("$key"));
+                } else {
+                    $this->array2xml($value, $xmlNode->addChild("item$key"));
+                }
+            } else {
+                $xmlNode->addChild("$key", htmlspecialchars("$value"));
+            }
+        }
+        return $xmlNode;
     }
 
     public function renderConsole() {
-        foreach($this->_view->getVars()->getArray() as $key=>$value) {
+        foreach ($this->_view->getCombinedVars()->getArray() as $key => $value) {
             echo $key . ': ' . $value . "\n";
         }
     }

@@ -14,6 +14,7 @@ require_once __DIR__ . '/../Kernel/Kernel.php';
 require_once __DIR__ . '/../Kernel/DC.php';
 require_once __DIR__ . '/../Application/Application.php';
 require_once __DIR__ . '/../Controller/BaseController.php';
+require_once __DIR__ . '/../Controller/JsonController.php';
 require_once __DIR__ . '/../Controller/ControllerService.php';
 require_once __DIR__ . '/../Router/ApplicationRoute.php';
 require_once __DIR__ . '/../Environment/Environment.php';
@@ -43,6 +44,7 @@ class KernelTest extends \PHPUnit_Framework_TestCase {
         $_SERVER['QUERY_STRING'] = '';
         $_SERVER['REQUEST_METHOD'] = 'GET';
         $_SERVER['DOCUMENT_ROOT'] = $env->getWebRoot();
+        $_SERVER['HTTP_ACCEPT'] = 'text/html';
 
         $kernel->run();
     }

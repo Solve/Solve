@@ -11,6 +11,7 @@ namespace Solve\View;
 
 
 use Solve\Http\Response;
+use Solve\Kernel\DC;
 use Solve\Storage\ArrayStorage;
 use Solve\Storage\SessionStorage;
 use Solve\View\RenderEngine\BaseRenderEngine;
@@ -44,23 +45,27 @@ class View extends \stdClass {
 
     protected $_templatesPath;
     protected $_templateName;
-    protected $_layoutName;
-    protected $_responseFormat = self::FORMAT_HTML;
-    protected $_renderEngine = 'Base';
+    protected $_layoutName      = '_layout';
+    protected $_responseFormat  = self::FORMAT_HTML;
+    protected $_renderEngine    = 'Base';
+    protected $_alreadyRendered = false;
 
     public function __construct() {
-        $this->_vars       = new ArrayStorage();
-        $this->_formatVars = new ArrayStorage();
-        $this->_flash      = new SessionStorage(array(), 'view_flash');
-        $this->_response   = new Response();
-//        $this->_responseFormat = DC::getRouter()->getCurrentRequest()->get
+        $this->_vars           = new ArrayStorage();
+        $this->_formatVars     = new ArrayStorage();
+        $this->_flash          = new SessionStorage(array(), 'view_flash');
+        $this->_response       = DC::getResponse();
+        $this->_responseFormat = $this->detectResponseFormat();
     }
 
     public function render($templateName = null) {
+        if ($this->_alreadyRendered) {
+            return true;
+        }
         if ($templateName) $this->setTemplateName($templateName);
         $viewEngineName = 'Solve\\View\\RenderEngine\\' . ucfirst($this->_renderEngine) . 'RenderEngine';
         if (!class_exists($viewEngineName)) {
-            throw new \Exception('View engine '.$viewEngineName.' not found');
+            throw new \Exception('View engine ' . $viewEngineName . ' not found');
         }
         /**
          * @var BaseRenderEngine $viewEngine
@@ -69,25 +74,54 @@ class View extends \stdClass {
         $viewEngine->configure();
         $renderMethod = 'render' . ucfirst($this->_responseFormat);
         if (!is_callable(array($viewEngine, $renderMethod))) {
-            throw new \Exception('No render method for '.$this->_responseFormat .' in engine '.$this->_renderEngine);
+            throw new \Exception('No render method for ' . $this->_responseFormat . ' in engine ' . $this->_renderEngine);
         }
-        call_user_func(array($viewEngine, $renderMethod));
+        $this->_response->setContent(call_user_func(array($viewEngine, $renderMethod)));
+        $this->_response->send();
+        $this->_alreadyRendered = true;
+    }
+
+    protected function detectResponseFormat() {
+        $accept = DC::getRouter()->getCurrentRequest()->getAcceptType();
+        if (strpos($accept, 'json') !== false) {
+            return static::FORMAT_JSON;
+        } elseif (strpos($accept, 'text/html') !== false) {
+            return static::FORMAT_HTML;
+        } elseif (strpos($accept, 'xml') !== false) {
+            return static::FORMAT_XML;
+        } else {
+            return static::FORMAT_CONSOLE;
+        }
     }
 
     /**
      * Set path to layout or null if layout does not needed
      * @param null|string $layoutName
+     * @return $this
      */
     public function setLayoutTemplate($layoutName = null) {
         $this->_layoutName = $layoutName;
+        return $this;
     }
 
     public function getLayoutTemplate() {
         return $this->_layoutName;
     }
 
+    public function setNoLayout() {
+        $this->_layoutName = null;
+        return $this;
+    }
+
+    public function setStandaloneTemplate($templateName) {
+        $this->_templateName = $templateName;
+        $this->_layoutName   = null;
+        return $this;
+    }
+
     public function setTemplateName($templateName) {
         $this->_templateName = $templateName;
+        return $this;
     }
 
     public function getTemplateName() {
@@ -103,8 +137,22 @@ class View extends \stdClass {
         return $this;
     }
 
-    public function setVar($key, $value) {
-        $this->_vars->set($key, $value);
+    public function setVar($key, $value, $format = null) {
+        if ($format) {
+            $this->_formatVars->setDeepValue($format . '/' . $key, $value);
+        } else {
+            $this->_vars->setDeepValue($key, $value);
+        }
+        return $this;
+    }
+
+    public function getCombinedVars($format = null) {
+        if (!$format) $format = $this->_responseFormat;
+        $combinedVars = new ArrayStorage($this->_vars);
+        if ($this->_formatVars->has($format)) {
+            $combinedVars->extendDeepValue($this->_formatVars->get($format));
+        }
+        return $combinedVars;
     }
 
     /**
@@ -114,11 +162,9 @@ class View extends \stdClass {
         return $this->_templatesPath;
     }
 
-    /**
-     * @param mixed $templatesPath
-     */
     public function setTemplatesPath($templatesPath) {
         $this->_templatesPath = $templatesPath;
+        return $this;
     }
 
     /**
@@ -128,11 +174,9 @@ class View extends \stdClass {
         return $this->_responseFormat;
     }
 
-    /**
-     * @param mixed $responseFormat
-     */
     public function setResponseFormat($responseFormat) {
         $this->_responseFormat = $responseFormat;
+        return $this;
     }
 
     /**
@@ -142,11 +186,13 @@ class View extends \stdClass {
         return $this->_renderEngine;
     }
 
-    /**
-     * @param string $renderEngine
-     */
+    public function getResponse() {
+        return $this->_response;
+    }
+
     public function setRenderEngine($renderEngine) {
         $this->_renderEngine = $renderEngine;
+        return $this;
     }
 
     /**

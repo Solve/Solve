@@ -14,6 +14,7 @@ use Solve\Autoloader\Autoloader;
 use Solve\Config\Config;
 use Solve\Config\ConfigService;
 use Solve\EventDispatcher\EventDispatcher;
+use Solve\Http\Response;
 use Solve\Logger\Logger;
 use Solve\DependencyInjection\DependencyContainer;
 use Solve\Router\Router;
@@ -27,6 +28,7 @@ use Solve\View\View;
  * Class DC is a helper class to access main instance of dependency container
  *
  * @method static Application getApplication() returns logger
+ * @method static Response getResponse() returns instance of response
  * @method static Logger getLogger() returns logger
  * @method static Router getRouter() returns router
  * @method static View getView()

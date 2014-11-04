@@ -17,4 +17,8 @@ class ApplicationController extends BaseController {
         echo "application pre action \n";
     }
 
+    public function _postAction() {
+        echo "application post action \n";
+    }
+
 }
