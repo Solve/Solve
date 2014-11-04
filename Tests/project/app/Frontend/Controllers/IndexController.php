@@ -10,6 +10,7 @@
 namespace Frontend\Controllers;
 
 use Solve\Controller\BaseController;
+use Solve\Database\QC;
 use Solve\Kernel\DC;
 use Solve\View\View;
 
@@ -22,6 +23,7 @@ class IndexController extends BaseController {
     public function defaultAction() {
         $this->view->name = 'Alexandr';
         $this->view->city = 'Kiev';
+        var_dump(QC::create('users')->execute());
 //        $this->view->setVar('name', 'AlexandrHTML', View::FORMAT_HTML);
 //        $this->view->setNoLayout();
 //        $this->view->setStandaloneTemplate('index/default');
