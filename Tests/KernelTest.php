@@ -42,6 +42,7 @@ class KernelTest extends \PHPUnit_Framework_TestCase {
         $this->assertEquals('Test project', DC::getProjectConfig('name'));
         $_SERVER['REQUEST_URI'] = '/';
         $_SERVER['QUERY_STRING'] = '';
+        $_SERVER['HTTP_HOST'] = 'test.com';
         $_SERVER['REQUEST_METHOD'] = 'GET';
         $_SERVER['DOCUMENT_ROOT'] = $env->getWebRoot();
         $_SERVER['HTTP_ACCEPT'] = 'text/html';

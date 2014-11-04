@@ -25,31 +25,10 @@ class SlotRenderEngine extends BaseRenderEngine {
         $this->_slot = new Slot();
         $this->_slot->setTemplateDir($this->_view->getTemplatesPath());
         $this->_slot->setCompileDir(DC::getEnvironment()->getTmpRoot() . 'templates/' . DC::getApplication()->getName() . '/');
-        $this->detectViewTemplate();
     }
     
-    public function renderHtml() {
-        $template = $this->_view->getTemplateName() . '.slot';
-
-        $vars = $this->_view->getCombinedVars();
-        if (($layout = $this->_view->getLayoutTemplate())) {
-            $vars['innerTemplateContent'] = $this->_slot->fetchTemplate($template, $vars);
-            $template = $layout  . '.slot';
-        }
-        echo $this->_slot->fetchTemplate($template, $vars);
-    }
-
-    public function detectViewTemplate() {
-        $route = DC::getApplication()->getRoute();
-        $folder = Inflector::slugify(substr($route->getControllerName(), 0, -10));
-        $action = Inflector::slugify(substr($route->getActionName(), 0, -6));
-
-        if (is_file($this->_view->getTemplatesPath() . $folder . '/' . $action . '.slot')) {
-            $this->_view->setTemplateName($folder . '/' . $action);
-        } elseif (is_file($this->_view->getTemplatesPath() . $action . '.slot')) {
-            $this->_view->setTemplateName($action);
-        } else {
-            throw new \Exception('Cannot detect template:' . $folder . '/' . $action);
-        }
+    public function fetchHtml($vars = array(), $templateName) {
+        $template = $templateName . '.slot';
+        return $this->_slot->fetchTemplate($template, $vars);
     }
 }

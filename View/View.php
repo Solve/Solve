@@ -14,6 +14,7 @@ use Solve\Http\Response;
 use Solve\Kernel\DC;
 use Solve\Storage\ArrayStorage;
 use Solve\Storage\SessionStorage;
+use Solve\Utils\Inflector;
 use Solve\View\RenderEngine\BaseRenderEngine;
 
 class View extends \stdClass {
@@ -43,12 +44,13 @@ class View extends \stdClass {
      */
     protected $_response;
 
-    protected $_templatesPath;
-    protected $_templateName;
-    protected $_layoutName      = '_layout';
-    protected $_responseFormat  = self::FORMAT_HTML;
-    protected $_renderEngine    = 'Base';
-    protected $_alreadyRendered = false;
+    protected        $_templatesPath;
+    protected        $_templateName;
+    protected        $_layoutName      = '_layout';
+    protected        $_responseFormat  = self::FORMAT_HTML;
+    protected        $_renderEngineName    = 'Base';
+    protected        $_alreadyRendered = false;
+    protected static $_renderEngineInstances         = array();
 
     public function __construct() {
         $this->_vars           = new ArrayStorage();
@@ -62,23 +64,64 @@ class View extends \stdClass {
         if ($this->_alreadyRendered) {
             return true;
         }
-        if ($templateName) $this->setTemplateName($templateName);
-        $viewEngineName = 'Solve\\View\\RenderEngine\\' . ucfirst($this->_renderEngine) . 'RenderEngine';
-        if (!class_exists($viewEngineName)) {
-            throw new \Exception('View engine ' . $viewEngineName . ' not found');
+        $vars = $this->getCombinedVars();
+        if ($this->_responseFormat == View::FORMAT_HTML) {
+            if (empty($templateName)) {
+                if (empty($this->_templateName)) $this->detectTemplate();
+                $templateName = $this->_templateName;
+            }
+            if (($layout = $this->getLayoutTemplate())) {
+                $vars['innerTemplateContent'] = $this->fetchTemplate($templateName, $vars);
+                $templateName = $layout;
+            }
         }
-        /**
-         * @var BaseRenderEngine $viewEngine
-         */
-        $viewEngine = new $viewEngineName($this);
-        $viewEngine->configure();
-        $renderMethod = 'render' . ucfirst($this->_responseFormat);
-        if (!is_callable(array($viewEngine, $renderMethod))) {
-            throw new \Exception('No render method for ' . $this->_responseFormat . ' in engine ' . $this->_renderEngine);
-        }
-        $this->_response->setContent(call_user_func(array($viewEngine, $renderMethod)));
+
+        $this->_response->setContent($this->fetchTemplate($templateName, $vars));
         $this->_response->send();
         $this->_alreadyRendered = true;
+    }
+
+    public function fetchTemplate($templateName, $vars = array(), $format = null) {
+        if (empty($format)) $format = $this->_responseFormat;
+
+        $renderEngine = $this->getEngineInstance($this->_renderEngineName);
+        $renderMethod = 'fetch' . ucfirst($format);
+        if (!is_callable(array($renderEngine, $renderMethod))) {
+            throw new \Exception('No render method for ' . $format . ' in engine ' . $this->_renderEngineName);
+        }
+        return call_user_func(array($renderEngine, $renderMethod), $vars, $templateName);
+    }
+
+    protected function detectTemplate() {
+        $route = DC::getApplication()->getRoute();
+        $folder = Inflector::slugify(substr($route->getControllerName(), 0, -10));
+        $action = Inflector::slugify(substr($route->getActionName(), 0, -6));
+
+        if (is_file($this->getTemplatesPath() . $folder . '/' . $action . '.slot')) {
+            $this->setTemplateName($folder . '/' . $action);
+        } elseif (is_file($this->getTemplatesPath() . $action . '.slot')) {
+            $this->setTemplateName($action);
+        } else {
+            throw new \Exception('Cannot detect template:' . $folder . '/' . $action);
+        }
+    }
+
+    public function getEngineInstance($engineName) {
+        if (empty(self::$_renderEngineInstances[$engineName])) {
+            $viewEngineName = 'Solve\\View\\RenderEngine\\' . ucfirst($engineName) . 'RenderEngine';
+
+            if (!class_exists($viewEngineName)) {
+                throw new \Exception('View engine ' . $viewEngineName . ' not found');
+            }
+
+            /**
+             * @var BaseRenderEngine $renderEngine
+             */
+            $renderEngine = new $viewEngineName($this);
+            $renderEngine->configure();
+            self::$_renderEngineInstances[$engineName] = $renderEngine;
+        }
+        return self::$_renderEngineInstances[$engineName];
     }
 
     protected function detectResponseFormat() {
@@ -182,16 +225,16 @@ class View extends \stdClass {
     /**
      * @return string
      */
-    public function getRenderEngine() {
-        return $this->_renderEngine;
+    public function getRenderEngineName() {
+        return $this->_renderEngineName;
     }
 
     public function getResponse() {
         return $this->_response;
     }
 
-    public function setRenderEngine($renderEngine) {
-        $this->_renderEngine = $renderEngine;
+    public function setRenderEngineName($renderEngine) {
+        $this->_renderEngineName = $renderEngine;
         return $this;
     }
 

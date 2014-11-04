@@ -13,4 +13,4 @@ autoloader:
 view:
   className: 'Solve\View\View'
 response:
-  className: 'Solve\Router\Response'
+  className: 'Solve\Http\Response'

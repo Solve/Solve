@@ -9,6 +9,7 @@
 
 namespace Solve\View\RenderEngine;
 
+use Solve\Storage\ArrayStorage;
 use Solve\View\View;
 
 class BaseRenderEngine {
@@ -25,28 +26,30 @@ class BaseRenderEngine {
     public function configure() {
     }
 
-    public function renderHtml() {
-        echo "Default HTML renderer";
+    public function fetchHtml($vars = array(), $templateName) {
+        return "Default HTML renderer ".$templateName;
     }
 
-    public function renderJson() {
+    public function fetchJson($vars = array()) {
+        if (is_object($vars) && $vars instanceof ArrayStorage) {
+            $vars = $vars->getData();
+        }
         $this->_view->getResponse()->getHeaders()->add('Content-type', 'text/json');
         if (defined('JSON_UNESCAPED_UNICODE')) {
-            echo json_encode($this->_view->getCombinedVars()->getArray(), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+            return json_encode($vars, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
         } else {
-            echo json_encode($this->_view->getCombinedVars()->getArray());
+            return json_encode($vars);
         }
     }
 
-    public function renderXml() {
+    public function fetchXml($vars = array()) {
         $this->_view->getResponse()->getHeaders()->add('Content-type', 'text/xml');
         $xml = new \SimpleXMLElement("<?xml version=\"1.0\"?><vars></vars>");
-        $xml = $this->array2xml($this->_view->getCombinedVars(), $xml);
+        $xml = $this->array2xml($vars, $xml);
         if (!headers_sent()) {
             header('Content-type: text/xml; encoding=utf8;');
         }
-        echo $xml->asXML();
-
+        return $xml->asXML();
     }
 
     /**
@@ -69,9 +72,11 @@ class BaseRenderEngine {
         return $xmlNode;
     }
 
-    public function renderConsole() {
-        foreach ($this->_view->getCombinedVars()->getArray() as $key => $value) {
-            echo $key . ': ' . $value . "\n";
+    public function fetchConsole($vars = array()) {
+        $result = '';
+        foreach ($vars as $key => $value) {
+            $result .= $key . ': ' . $value . "\n";
         }
+        return $result;
     }
 }

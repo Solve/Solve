@@ -11,19 +11,34 @@ namespace Frontend\Controllers;
 
 use Solve\Controller\BaseController;
 use Solve\Kernel\DC;
-use Solve\Router\Router;
 use Solve\View\View;
 
 class IndexController extends BaseController {
 
+    public function _preAction() {
+        echo "index controller pre \n";
+    }
+
     public function defaultAction() {
         $this->view->name = 'Alexandr';
-        $this->view->setVar('name', 'AlexandrHTML', View::FORMAT_HTML);
-        $this->view->setStandaloneTemplate('index/default');
+        $this->view->city = 'Kiev';
+//        $this->view->setVar('name', 'AlexandrHTML', View::FORMAT_HTML);
+//        $this->view->setNoLayout();
+//        $this->view->setStandaloneTemplate('index/default');
+//        echo "index default  \n";
+//        $this->forwardToRoute('test');
+//        $this->redirectToUri('about/');
+//        $this->redirectSelf();
+//        var_dump($this->view->fetchTemplate('index/default'));die();
     }
 
     public function testAction() {
-        die('test');
+        echo "index test  \n";
+        $this->view->setResponseFormat(View::FORMAT_CONSOLE);
+        $this->forwardToRoute('about');
     }
 
+    public function _postAction() {
+        echo "index controller post \n";
+    }
 }

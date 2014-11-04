@@ -15,8 +15,10 @@ use Solve\Utils\Inflector;
 
 class ControllerService {
 
-    static private $_activeNamespace;
-    private static $_loadedControllers = array();
+    private static $_activeNamespace;
+    private static $_loadedControllers   = array();
+    private static $_executedPreActions  = array();
+    private static $_executedPostActions = array();
 
     /**
      * @param $controllerName
@@ -38,9 +40,29 @@ class ControllerService {
         if (method_exists($instance, $actionName)) {
             $instance->{$actionName}();
         } else {
-            DC::getEventDispatcher()->dispatchEvent('route.notFound');
-            DC::getLogger()->add('Invalid action call:' . $controllerName . '->' . $actionName . '()');
+            static::fireRouteNotFound($controllerName, $actionName);
         }
+    }
+
+    public static function processControllerAction($controllerName, $actionName) {
+        if (static::isControllerExists($controllerName)) {
+            if (empty(static::$_executedPreActions[$controllerName])) {
+                static::safeCall($controllerName, '_preAction');
+                static::$_executedPreActions[$controllerName] = true;
+            }
+            static::safeCall($controllerName, $actionName);
+            if (empty(static::$_executedPostActions[$controllerName])) {
+                static::safeCall($controllerName, '_postAction');
+                static::$_executedPostActions[$controllerName] = true;
+            }
+        } else {
+            static::fireRouteNotFound($controllerName, $actionName);
+        }
+    }
+
+    protected static function fireRouteNotFound($controllerName, $actionName) {
+        DC::getEventDispatcher()->dispatchEvent('route.notFound');
+        DC::getLogger()->add('Invalid action call:' . $controllerName . '->' . $actionName . '()');
     }
 
     public static function isControllerExists($controllerName, $namespace = null) {

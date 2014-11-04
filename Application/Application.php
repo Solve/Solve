@@ -49,36 +49,37 @@ class Application {
         $this->_root            = DC::getEnvironment()->getApplicationRoot() . $this->_config['path'];
         $this->_controllersRoot = $this->_root . 'controllers/';
         $this->_config          = new YamlStorage($this->getRoot() . 'config.yml');
+        if (!$this->_config->has('routes')) {
+            throw new \Exception('Routes not found for app [' . $this->_name . '], in ' . $this->_config->getPath());
+        }
+        DC::getRouter()->addRoutes($this->_config->get('routes'));
         $this->detectApplicationRoute();
     }
 
     public function configure() {
-        DC::getView()->setTemplatesPath($this->getRoot() . 'Views/')->setRenderEngine('Slot');
+        DC::getView()->setTemplatesPath($this->getRoot() . 'Views/')->setRenderEngineName('Slot');
+
     }
 
     public function process() {
         if (ControllerService::isControllerExists('ApplicationController')) {
             ControllerService::getController('ApplicationController')->_preAction();
         }
-        ControllerService::safeCall($this->_route->getControllerName(), $this->_route->getActionName());
+        ControllerService::processControllerAction($this->_route->getControllerName(), $this->_route->getActionName());
         if (ControllerService::isControllerExists('ApplicationController')) {
             ControllerService::getController('ApplicationController')->_postAction();
         }
         DC::getView()->render();
     }
 
-    protected function detectApplicationRoute() {
-        if (!$this->_config->has('routes')) {
-            throw new \Exception('Routes not found for app [' . $this->_name . '], in ' . $this->_config->getPath());
-        }
-        DC::getRouter()->addRoutes($this->_config->get('routes'));
+    public function detectApplicationRoute() {
         $route = DC::getRouter()->processRequest(Request::getIncomeRequest())->getCurrentRoute();
         if ($route->isNotFound()) {
             DC::getEventDispatcher()->dispatchEvent('route.notFound');
             return false;
         }
-
         $this->_route = new ApplicationRoute($route);
+        return $this;
     }
 
 
@@ -130,11 +131,19 @@ class Application {
         return $this->_root;
     }
 
+    public function getConfig() {
+        return $this->_config;
+    }
+
     /**
      * @return ApplicationRoute
      */
     public function getRoute() {
         return $this->_route;
+    }
+
+    public function setRoute(ApplicationRoute $route) {
+        $this->_route = $route;
     }
 
     public function getEventListeners() {

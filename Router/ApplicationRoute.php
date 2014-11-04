@@ -36,6 +36,7 @@ class ApplicationRoute extends Route {
         $this->setConfig($route->getConfig());
         $this->setName($route->getName());
         $this->setIsNotFound($route->isNotFound());
+        $this->setUriPattern($route->getUriPattern());
         foreach ($this->_systemPatterns as $varName => $params) {
             $value = $route->getVar($varName, $params[0]);
             if (!empty($params[2]) && is_callable($params[2])) {
