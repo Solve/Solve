@@ -1,5 +1,5 @@
 profiler: true
-auto_update_all: false
+autoUpdateAll: true
 profiles:
   default:
     dbtype: mysql

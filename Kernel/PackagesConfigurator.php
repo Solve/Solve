@@ -12,35 +12,42 @@ namespace Solve\Kernel;
 
 use Solve\Config\ConfigService;
 use Solve\Database\DatabaseService;
+use Solve\Database\Models\ModelOperator;
+use Solve\EventDispatcher\BaseEvent;
 
 class PackagesConfigurator {
 
-    public function processConfigs() {
+    public function onKernelReady() {
         if ($webRoot = DC::getProjectConfig('webRoot')) {
             DC::getEnvironment()->setWebRoot($webRoot);
         }
+
         $databaseConfig = DC::getDatabaseConfig();
         if (($profiles = $databaseConfig->get('profiles'))) {
             foreach($profiles as $profileName => $profileInfo) {
                 DatabaseService::configProfile($profileInfo, $profileName);
             }
+            ModelOperator::getInstance(DC::getEnvironment()->getUserClassesRoot() . 'db/');
+            if ($databaseConfig->get('autoUpdateAll')) {
+                ModelOperator::getInstance()->generateAllModelClasses()->updateDBForAllModels();;
+            }
+
         }
     }
 
-    public function onEnvironmentUpdate($params) {
+    public function onEnvironmentUpdate(BaseEvent $event) {
         ConfigService::setConfigsPath(DC::getEnvironment()->getConfigRoot());
         ConfigService::loadAllConfigs();
         DC::getLogger()->setLogsPath(DC::getEnvironment()->getTmpRoot() . 'log');
 
-//        var_dump($params);die();
+//        var_dump($event->getParameters());die();
 
     }
 
     public function getEventListeners() {
-        var_dump(1);die();
         return array(
             'kernel.ready'  => array(
-                'listener'   => array($this, 'processConfigs')
+                'listener'   => array($this, 'onKernelReady')
             ),
             'environment.update'    => array(
                 'listener'=> array($this, 'onEnvironmentUpdate')

@@ -68,15 +68,9 @@ class Environment {
         $this->_vars->setDeepValue('roots/application', $projectRoot . 'app/');
         $this->_vars->setDeepValue('roots/config', $projectRoot . 'config/');
         $this->_vars->setDeepValue('roots/tmp', $projectRoot . 'tmp/');
-        $this->_vars->setDeepValue('roots/userclasses', $projectRoot . 'src/classes/');
+        $this->_vars->setDeepValue('roots/userclasses', $projectRoot . 'src/');
         $this->_vars->setDeepValue('roots/web', $projectRoot . 'web/');
         $this->_vars->setDeepValue('roots/upload', $this->getWebRoot() . 'upload/');
-//        $this->setApplicationRoot($this->getProjectRoot() . 'app/');
-//        $this->setConfigRoot($this->getProjectRoot() . 'config/');
-//        $this->setTmpRoot($this->getProjectRoot() . 'tmp/');
-//        $this->setUserClassesRoot($this->getProjectRoot() . 'src/classes/');
-//        $this->setWebRoot($this->getProjectRoot() . 'web/');
-//        $this->setUploadRoot($this->getWebRoot() . 'upload/');
     }
 
     public function setProjectRoot($path, $updateOther = false) {

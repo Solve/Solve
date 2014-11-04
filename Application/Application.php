@@ -150,7 +150,6 @@ class Application {
         return array(
             'kernel.ready' => array(
                 'listener'   => array($this, 'run'),
-                'parameters' => array()
             )
         );
     }

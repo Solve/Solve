@@ -23,7 +23,6 @@ class IndexController extends BaseController {
     public function defaultAction() {
         $this->view->name = 'Alexandr';
         $this->view->city = 'Kiev';
-        die('default');
         var_dump(QC::create('users')->execute());
 //        $this->view->setVar('name', 'AlexandrHTML', View::FORMAT_HTML);
 //        $this->view->setNoLayout();

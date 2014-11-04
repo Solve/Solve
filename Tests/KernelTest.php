@@ -12,6 +12,7 @@ namespace Solve\Tests;
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../Kernel/Kernel.php';
 require_once __DIR__ . '/../Kernel/DC.php';
+require_once __DIR__ . '/../Kernel/PackagesConfigurator.php';
 require_once __DIR__ . '/../Application/Application.php';
 require_once __DIR__ . '/../Controller/BaseController.php';
 require_once __DIR__ . '/../Controller/JsonController.php';
@@ -22,7 +23,6 @@ require_once __DIR__ . '/../View/View.php';
 require_once __DIR__ . '/../View/RenderEngine/BaseRenderEngine.php';
 require_once __DIR__ . '/../View/RenderEngine/SlotRenderEngine.php';
 
-use Solve\Config\ConfigService;
 use Solve\Kernel\DC;
 use Solve\Kernel\Kernel;
 use Solve\Utils\FSService;
@@ -31,15 +31,14 @@ class KernelTest extends \PHPUnit_Framework_TestCase {
 
     public function testBasic() {
         $this->buildTestStructure();
-        /**
-         * Kernel
-         */
+
         $kernel = Kernel::getMainInstance();
         $env = $kernel->getEnvironment();
         $this->assertEquals(realpath(__DIR__ . '/../../../') . '/', $env->getProjectRoot(), 'root detected correctly');
+
         $kernel->getEnvironment()->setProjectRoot(realpath(__DIR__ . '/project/') . '/', true);
-        $kernel->boot();
         $this->assertEquals('Test project', DC::getProjectConfig('name'));
+
         $_SERVER['REQUEST_URI'] = '/';
         $_SERVER['QUERY_STRING'] = '';
         $_SERVER['HTTP_HOST'] = 'test.com';
@@ -61,6 +60,10 @@ class KernelTest extends \PHPUnit_Framework_TestCase {
             __DIR__ . '/project/tmp/log',
             __DIR__ . '/project/tmp/cache',
         ));
+
+        $pdo = new \PDO('mysql:127.0.0.1', 'root', 'root');
+        $pdo->query('create database if not exists test_project_db');
+
     }
 
 }

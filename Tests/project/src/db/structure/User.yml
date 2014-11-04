@@ -1,0 +1,11 @@
+table: users
+columns:
+  id:
+    type: 'int(11) unsigned'
+    auto_increment: true
+  title:
+    type: varchar(255)
+indexes:
+  primary:
+    columns:
+      - id

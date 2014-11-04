@@ -51,7 +51,7 @@ class Kernel {
         $this->_dependencyContainer->setDependencyObject('kernel', $this);
         $this->loadSystemDependencies();
         $this->loadUserDependencies();
-//        $this->onEnvironmentUpdate();
+        $this->addEventsListeners();
     }
 
     public static function getMainInstance(DependencyContainer $dc = null) {
@@ -70,15 +70,9 @@ class Kernel {
 
         $this->_eventDispatcher = DC::getEventDispatcher();
         $this->_environment     = Environment::createFromContext();
-//        $this->_eventDispatcher->addEventListener('environment.update', array($this, 'onEnvironmentUpdate'));
         DC::getAutoloader()->register(false);
     }
 
-    public function onEnvironmentUpdate() {
-//        ConfigService::setConfigsPath($this->_environment->getConfigRoot());
-//        ConfigService::loadAllConfigs();
-//        DC::getLogger()->setLogsPath($this->_environment->getTmpRoot() . 'log');
-    }
 
     protected function loadUserDependencies() {
         if (is_file($this->_environment->getUserClassesRoot() . 'user.dependencies.yml')) {
@@ -87,11 +81,8 @@ class Kernel {
         }
     }
 
-    public function boot() {
+    protected function addEventsListeners() {
         foreach ($this->_dependencyContainer->getAllDependencies() as $name => $info) {
-            if (is_callable(array($info['className'], 'onKernelBoot'))) {
-                $this->_dependencyContainer->get($name)->onKernelBoot($this->_dependencyContainer);
-            }
             if (is_callable(array($info['className'], 'getEventListeners'))) {
                 $events = $this->_dependencyContainer->get($name)->getEventListeners();
                 foreach ($events as $eventName => $params) {
@@ -102,6 +93,11 @@ class Kernel {
                 }
             }
         }
+
+    }
+
+    public function boot() {
+        $this->_eventDispatcher->dispatchEvent('kernel.boot');
         if (headers_sent()) {
             DC::getLogger()->add('Cannot start session, headers sent', Logger::NAMESPACE_KERNEL);
         } else {
