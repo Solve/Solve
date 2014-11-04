@@ -1,3 +1,5 @@
+packagesConfigurator:
+  className: 'Solve\Kernel\PackagesConfigurator'
 router:
   className: 'Solve\Router\Router'
 eventDispatcher:

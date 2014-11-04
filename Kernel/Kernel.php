@@ -48,11 +48,10 @@ class Kernel {
         if (empty($dc)) $dc = new DependencyContainer();
 
         $this->_dependencyContainer = $dc;
-        $this->_environment         = Environment::createFromContext();
         $this->_dependencyContainer->setDependencyObject('kernel', $this);
         $this->loadSystemDependencies();
         $this->loadUserDependencies();
-        $this->onEnvironmentUpdate();
+//        $this->onEnvironmentUpdate();
     }
 
     public static function getMainInstance(DependencyContainer $dc = null) {
@@ -69,34 +68,22 @@ class Kernel {
         $initialDependencies = new YamlStorage(__DIR__ . '/kernel.dependencies.yml');
         $this->_dependencyContainer->addDependencies($initialDependencies);
 
-        $this->_eventDispatcher = $this->_dependencyContainer->get('eventDispatcher');
+        $this->_eventDispatcher = DC::getEventDispatcher();
+        $this->_environment     = Environment::createFromContext();
+//        $this->_eventDispatcher->addEventListener('environment.update', array($this, 'onEnvironmentUpdate'));
         DC::getAutoloader()->register(false);
-        $this->onEnvironmentUpdate();
     }
 
     public function onEnvironmentUpdate() {
-        ConfigService::setConfigsPath($this->_environment->getConfigRoot());
-        ConfigService::loadAllConfigs();
-        DC::getLogger()->setLogsPath($this->_environment->getTmpRoot() . 'log');
-        $this->processConfigs();
+//        ConfigService::setConfigsPath($this->_environment->getConfigRoot());
+//        ConfigService::loadAllConfigs();
+//        DC::getLogger()->setLogsPath($this->_environment->getTmpRoot() . 'log');
     }
 
     protected function loadUserDependencies() {
         if (is_file($this->_environment->getUserClassesRoot() . 'user.dependencies.yml')) {
             $dependencies = new YamlStorage($this->_environment->getUserClassesRoot() . 'user.dependencies.yml');
             $this->_dependencyContainer->addDependencies($dependencies);
-        }
-    }
-
-    protected function processConfigs() {
-        if ($webRoot = DC::getProjectConfig('webRoot')) {
-            $this->_environment->setWebRoot($webRoot);
-        }
-        $databaseConfig = DC::getDatabaseConfig();
-        if (($profiles = $databaseConfig->get('profiles'))) {
-            foreach($profiles as $profileName => $profileInfo) {
-                DatabaseService::configProfile($profileInfo, $profileName);
-            }
         }
     }
 

@@ -10,8 +10,36 @@
 namespace Solve\Environment;
 
 
+use Solve\Kernel\DC;
 use Solve\Storage\ArrayStorage;
 
+/**
+ * Class Environment
+ * @package Solve\Environment
+ *
+ * Class Environment is represents environment
+ *
+ * @method string getProjectRoot()
+ *
+ * @method string getConfigRoot()
+ * @method $this setConfigRoot($path)
+ * @method string getTmpRoot()
+ * @method $this setTmpRoot($path)
+ * @method string getApplicationRoot()
+ * @method $this setApplicationRoot($path)
+ * @method string getWebRoot()
+ * @method $this setWebRoot($path)
+ * @method string getUploadRoot()
+ * @method $this setUploadRoot($path)
+ * @method string getUserClassesRoot()
+ * @method $this setUserClassesRoot($path)
+ *
+ * @method string getTimezone()
+ * @method $this setTimezone($path)
+ *
+ * @version 1.0
+ * @author Alexandr Viniychuk <alexandr.viniychuk@icloud.com>
+ */
 class Environment {
 
     /**
@@ -25,8 +53,7 @@ class Environment {
 
     public static function createFromContext() {
         $environment = new static();
-        $environment->setProjectRoot(realpath(__DIR__. '/../../../') . '/');
-        $environment->updateFromProjectRoot();
+        $environment->setProjectRoot(realpath(__DIR__ . '/../../../') . '/', true);
 
         if (!ini_get('date.timezone') || !($timezone = date_default_timezone_get())) {
             $timezone = 'Europe/Kiev';
@@ -37,79 +64,45 @@ class Environment {
     }
 
     protected function updateFromProjectRoot() {
-        $this->setApplicationRoot($this->getProjectRoot() . 'app/');
-        $this->setConfigRoot($this->getProjectRoot() . 'config/');
-        $this->setTmpRoot($this->getProjectRoot() . 'tmp/');
-        $this->setUserClassesRoot($this->getProjectRoot() . 'src/classes/');
-        $this->setWebRoot($this->getProjectRoot() . 'web/');
-        $this->setUploadRoot($this->getWebRoot() . 'upload/');
+        $projectRoot = $this->getProjectRoot();
+        $this->_vars->setDeepValue('roots/application', $projectRoot . 'app/');
+        $this->_vars->setDeepValue('roots/config', $projectRoot . 'config/');
+        $this->_vars->setDeepValue('roots/tmp', $projectRoot . 'tmp/');
+        $this->_vars->setDeepValue('roots/userclasses', $projectRoot . 'src/classes/');
+        $this->_vars->setDeepValue('roots/web', $projectRoot . 'web/');
+        $this->_vars->setDeepValue('roots/upload', $this->getWebRoot() . 'upload/');
+//        $this->setApplicationRoot($this->getProjectRoot() . 'app/');
+//        $this->setConfigRoot($this->getProjectRoot() . 'config/');
+//        $this->setTmpRoot($this->getProjectRoot() . 'tmp/');
+//        $this->setUserClassesRoot($this->getProjectRoot() . 'src/classes/');
+//        $this->setWebRoot($this->getProjectRoot() . 'web/');
+//        $this->setUploadRoot($this->getWebRoot() . 'upload/');
     }
 
     public function setProjectRoot($path, $updateOther = false) {
         $this->_vars['roots']['project'] = $path;
-        if ($updateOther) {
-            $this->updateFromProjectRoot();
+        if ($updateOther) $this->updateFromProjectRoot();
+        DC::getEventDispatcher()->dispatchEvent('environment.update', 'project');
+    }
+
+    public function __call($method, $params) {
+        $operation = substr($method, 0, 3);
+        if (in_array($operation, array('get', 'set'))) {
+            if (substr($method, -4) == 'Root') {
+                $key = 'roots/' . strtolower(substr($method, 3, -4));
+            } else {
+                $key = strtolower(substr($method, 3));
+            }
+            if ($operation == 'get') {
+                return $this->_vars->getDeepValue($key);
+            } else {
+                $this->_vars->setDeepValue($key, $params[0]);
+                DC::getEventDispatcher()->dispatchEvent('environment.update', $key);
+                return $this;
+            }
+        } else {
+            return $this;
         }
-    }
-
-    public function getProjectRoot() {
-        return $this->_vars['roots']['project'];
-    }
-
-    public function setConfigRoot($path) {
-        $this->_vars['roots']['config'] = $path;
-    }
-
-    public function getConfigRoot() {
-        return $this->_vars['roots']['config'];
-    }
-
-    public function setTmpRoot($path) {
-        $this->_vars['roots']['tmp'] = $path;
-    }
-
-    public function getTmpRoot() {
-        return $this->_vars['roots']['tmp'];
-    }
-
-    public function setApplicationRoot($path) {
-        $this->_vars['roots']['application'] = $path;
-    }
-
-    public function getApplicationRoot() {
-        return $this->_vars['roots']['application'];
-    }
-
-    public function setWebRoot($path) {
-        $this->_vars['roots']['web'] = $path;
-    }
-
-    public function getWebRoot() {
-        return $this->_vars['roots']['web'];
-    }
-
-    public function setUploadRoot($path) {
-        $this->_vars['roots']['upload'] = $path;
-    }
-
-    public function getUploadRoot() {
-        return $this->_vars['roots']['upload'];
-    }
-
-    public function setUserClassesRoot($path) {
-        $this->_vars['roots']['user_classes'] = $path;
-    }
-
-    public function getUserClassesRoot() {
-        return $this->_vars['roots']['user_classes'];
-    }
-
-    public function setTimezone($timezone) {
-        $this->_vars['timezone'] = $timezone;
-    }
-
-    public function getTimezone() {
-        return $this->_vars['timezone'];
     }
 
 }

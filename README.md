@@ -11,6 +11,7 @@ Solve Framework Package
 route.buildRequest
 route.notFound
 kernel.ready
+environment.update
 ```
 
 **DependenciesMethods**

@@ -38,7 +38,7 @@ class KernelTest extends \PHPUnit_Framework_TestCase {
         $env = $kernel->getEnvironment();
         $this->assertEquals(realpath(__DIR__ . '/../../../') . '/', $env->getProjectRoot(), 'root detected correctly');
         $kernel->getEnvironment()->setProjectRoot(realpath(__DIR__ . '/project/') . '/', true);
-        $kernel->onEnvironmentUpdate();
+        $kernel->boot();
         $this->assertEquals('Test project', DC::getProjectConfig('name'));
         $_SERVER['REQUEST_URI'] = '/';
         $_SERVER['QUERY_STRING'] = '';
@@ -46,7 +46,6 @@ class KernelTest extends \PHPUnit_Framework_TestCase {
         $_SERVER['REQUEST_METHOD'] = 'GET';
         $_SERVER['DOCUMENT_ROOT'] = $env->getWebRoot();
         $_SERVER['HTTP_ACCEPT'] = 'text/html';
-
         $kernel->run();
     }
 
