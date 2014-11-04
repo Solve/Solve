@@ -14,7 +14,7 @@ use Solve\Controller\BaseController;
 class IndexController extends BaseController {
 
     public function defaultAction() {
-        $this->view->test = 'Hello';
+        $this->view->name = 'Alexandr';
     }
 
 }

@@ -10,17 +10,32 @@
 namespace Solve\View\RenderEngine;
 
 use Solve\Kernel\DC;
+use Solve\Slot\Slot;
 use Solve\Utils\Inflector;
 
 class SlotRenderEngine extends BaseRenderEngine {
 
+    /**
+     * @var Slot
+     */
+    private $_slot;
+
     public function configure() {
         parent::configure();
+        $this->_slot = new Slot();
+        $this->_slot->setTemplateDir($this->_view->getTemplatesPath());
+        $this->_slot->setCompileDir(DC::getEnvironment()->getTmpRoot() . 'templates/' . DC::getApplication()->getName() . '/');
         $this->detectViewTemplate();
     }
     
-    public function render() {
-        echo file_get_contents($this->_view->getTemplatesPath() . $this->_view->getTemplateName() . '.slot');
+    public function renderHtml() {
+        $template = $this->_view->getTemplateName() . '.slot';
+
+        if (($layout = $this->_view->getLayoutTemplate())) {
+            $this->_view->setVar('innerContent', $this->_slot->fetchTemplate($template));
+            $template = $layout  . '.slot';
+        }
+        echo $this->_slot->fetchTemplate($template, $this->_view->getVars());
     }
 
     public function detectViewTemplate() {

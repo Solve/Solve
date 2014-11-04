@@ -80,6 +80,7 @@ class Application {
     public function render() {
         $view = DC::getView();
         $view->setTemplatesPath($this->getRoot() . 'Views/');
+        $view->setRenderEngine('Slot');
         $view->render();
     }
 

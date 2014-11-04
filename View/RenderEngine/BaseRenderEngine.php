@@ -41,7 +41,7 @@ class BaseRenderEngine {
     }
 
     public function renderXml() {
-
+        echo "Default XML renderer";
     }
 
     public function renderConsole() {

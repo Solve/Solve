@@ -82,6 +82,10 @@ class View extends \stdClass {
         $this->_layoutName = $layoutName;
     }
 
+    public function getLayoutTemplate() {
+        return $this->_layoutName;
+    }
+
     public function setTemplateName($templateName) {
         $this->_templateName = $templateName;
     }
@@ -97,6 +101,10 @@ class View extends \stdClass {
     public function __set($key, $value) {
         $this->_vars->set($key, $value);
         return $this;
+    }
+
+    public function setVar($key, $value) {
+        $this->_vars->set($key, $value);
     }
 
     /**
