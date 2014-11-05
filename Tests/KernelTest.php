@@ -61,7 +61,7 @@ class KernelTest extends \PHPUnit_Framework_TestCase {
             __DIR__ . '/project/tmp/cache',
         ));
 
-        $pdo = new \PDO('mysql:127.0.0.1', 'root', 'root');
+        $pdo = new \PDO('mysql:host=127.0.0.1', 'root', 'root');
         $pdo->query('create database if not exists test_project_db');
 
     }
