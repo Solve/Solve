@@ -53,7 +53,7 @@ class Environment {
 
     public static function createFromContext() {
         $environment = new static();
-        $environment->setProjectRoot(realpath(__DIR__ . '/../../../') . '/', true);
+        $environment->setProjectRoot(realpath(__DIR__ . '/../../../../../../') . '/', true);
 
         if (!ini_get('date.timezone') || !($timezone = date_default_timezone_get())) {
             $timezone = 'Europe/Kiev';
