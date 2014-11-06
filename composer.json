@@ -23,7 +23,7 @@
         "solve/database": "*"
     },
     "autoload": {
-        "psr-0": { "Solve": "" }
+        "psr-4": { "Solve": "" }
     },
     "target-dir": ""
 }
