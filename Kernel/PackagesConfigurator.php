@@ -17,7 +17,8 @@ use Solve\EventDispatcher\BaseEvent;
 
 class PackagesConfigurator {
 
-    public function onKernelReady() {
+    public function onKernelReady(BaseEvent $event) {
+        $this->onEnvironmentUpdate($event);
         if ($webRoot = DC::getProjectConfig('webRoot')) {
             DC::getEnvironment()->setWebRoot($webRoot);
         }
@@ -39,9 +40,6 @@ class PackagesConfigurator {
         ConfigService::setConfigsPath(DC::getEnvironment()->getConfigRoot());
         ConfigService::loadAllConfigs();
         DC::getLogger()->setLogsPath(DC::getEnvironment()->getTmpRoot() . 'log');
-
-//        var_dump($event->getParameters());die();
-
     }
 
     public function getEventListeners() {

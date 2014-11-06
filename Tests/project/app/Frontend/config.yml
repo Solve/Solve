@@ -1,12 +1,5 @@
 routes:
-  test:
-    pattern: '/{action}'
-    action: test
   default:
     pattern: '/'
-  about:
-    pattern: '/about'
-    controller: Page
-    action: about
 
 dependencies:
