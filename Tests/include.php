@@ -3,6 +3,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../Kernel/Kernel.php';
 require_once __DIR__ . '/../Kernel/DC.php';
 require_once __DIR__ . '/../Kernel/PackagesConfigurator.php';
+require_once __DIR__ . '/../DocComment/DocComment.php';
 require_once __DIR__ . '/../Application/Application.php';
 require_once __DIR__ . '/../Application/ConsoleApplication.php';
 require_once __DIR__ . '/../Controller/BaseController.php';

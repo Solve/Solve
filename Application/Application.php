@@ -43,6 +43,7 @@ class Application {
         $this->boot();
         $this->configure();
         $this->process();
+        $this->render();
     }
 
     public function boot() {
@@ -57,7 +58,6 @@ class Application {
 
     public function configure() {
         DC::getView()->setTemplatesPath($this->getRoot() . 'Views/')->setRenderEngineName('Slot');
-
     }
 
     public function process() {
@@ -68,8 +68,12 @@ class Application {
         if (ControllerService::isControllerExists('ApplicationController')) {
             ControllerService::getController('ApplicationController')->_postAction();
         }
+    }
+
+    public function render() {
         DC::getView()->render();
     }
+
 
     public function detectApplicationRoute() {
         $route = DC::getRouter()->processRequest(Request::getIncomeRequest())->getCurrentRoute();

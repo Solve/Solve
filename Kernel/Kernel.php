@@ -127,7 +127,6 @@ class Kernel {
      */
     public function setEnvironment($environment) {
         $this->_environment = $environment;
-        $this->onEnvironmentUpdate();
         return $this;
     }
 

@@ -24,7 +24,7 @@ class PackagesConfigurator {
         }
 
         $databaseConfig = DC::getDatabaseConfig();
-        if (($profiles = $databaseConfig->get('profiles'))) {
+        if (($profiles = $databaseConfig->get('profiles')) && !DC::getRouter()->getCurrentRequest()->isConsoleRequest()) {
             foreach($profiles as $profileName => $profileInfo) {
                 DatabaseService::configProfile($profileInfo, $profileName);
             }

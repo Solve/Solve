@@ -10,12 +10,25 @@
 namespace SolveConsole\Controllers;
 
 use Solve\Controller\ConsoleController;
+use Solve\DocComment\DocComment;
+use Solve\Utils\Inflector;
 
 class IndexController extends ConsoleController {
 
     public function defaultAction() {
-        $this->writeln("Solve console tools v0.1.");
-        $this->message("Kernel's ready.");
+        $this->writeln('Available commands:');
+        $controllers  = array(
+            'SolveConsole\\Controllers\\DbController'
+        );
+        $commandsList = '';
+        foreach ($controllers as $controllerName) {
+            $r    = new \ReflectionClass($controllerName);
+            $name = Inflector::underscore(substr($r->getShortName(), 0, -10));
+            $help = DocComment::parseFromString($r->getDocComment())->getAnnotationsAsString('help');
+            $commandsList .= '  <bold>' . $name . "</bold>\t" . $help ."\n";
+        }
+        $this->writeln($commandsList);
+
     }
 
 }
