@@ -30,4 +30,11 @@ class ConsoleApplication extends Application {
         return $this->_name;
     }
 
+    public function getEventListeners() {
+        $events = parent::getEventListeners();
+        $events['route.notFound'] = array(
+            'listener' => array('SolveConsole\\Controllers\\NotFoundController', 'notFoundAction')
+        );
+        return $events;
+    }
 }

@@ -1,4 +1,10 @@
 routes:
+  controller_action:
+    pattern: "{controller}/{action}"
+
+  controller_index:
+    pattern: "{controller}/?"
+
   default:
-    pattern: '.*'
+    pattern: ".*"
     controller: Index

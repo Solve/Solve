@@ -23,10 +23,15 @@ class BaseController {
 
     public $view;
     public $router;
+    /**
+     * @var ApplicationRoute
+     */
+    public $route;
 
     public function __construct() {
-        $this->view = DC::getView();
+        $this->view   = DC::getView();
         $this->router = DC::getRouter();
+        $this->route  = DC::getApplication()->getRoute();
     }
 
     public function redirectToUri($relativeUri) {
@@ -42,7 +47,7 @@ class BaseController {
         $response->setStatusCode(HttpStatus::HTTP_OK);
         $response->setHeader('Location', $fullUrl);
         if (!$response->sendHeaders()) {
-            DC::getLogger()->add('Cannot redirect to '.$relativeUri);
+            DC::getLogger()->add('Cannot redirect to ' . $relativeUri);
         }
         die();
     }

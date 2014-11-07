@@ -20,7 +20,8 @@
         "solve/autoloader": "*",
         "solve/eventdispatcher": ">=v1.0.2",
         "solve/logger": ">=1.0.0",
-        "solve/database": "*"
+        "solve/database": "*",
+        "kevinlebrun/colors.php": "*"
     },
     "autoload": {
         "psr-4": { "Solve\\": "" }

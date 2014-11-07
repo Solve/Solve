@@ -24,7 +24,7 @@ class ConsoleRequest {
         $uri = str_replace(':', '/', array_shift($params));
         if (empty($uri)) $uri = '/';
 
-        $request->setUri('console' . $uri);
+        $request->setUri($uri);
         foreach ($params as $param) {
             $m = array();
             preg_match('#--(?P<key>[-\.\w\d]+)(\s?=\s?(?P<value>.+))?#is', $param, $m);

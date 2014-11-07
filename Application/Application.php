@@ -83,7 +83,7 @@ class Application {
 
 
     public function detectApplication() {
-        $event = DC::getEventDispatcher()->dispatchEvent('route.buildRequest', Request::getIncomeRequest());
+        DC::getEventDispatcher()->dispatchEvent('route.buildRequest', Request::getIncomeRequest());
         /**
          * @var ArrayStorage $appList
          */
@@ -100,6 +100,8 @@ class Application {
 
                 $appUri = !empty($appParams['uri']) ? $appParams['uri'] : $appName;
                 if (strpos($uriParts[0], $appUri) === 0) {
+                    array_shift($uriParts);
+                    Request::getIncomeRequest()->setUri(implode('/', $uriParts));
                     return ($this->_name = $appName);
                 }
             }
