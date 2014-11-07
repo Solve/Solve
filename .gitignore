@@ -1,4 +1,5 @@
 .idea/
 vendor/
 Tests/project/tmp/
+Tests/project/src/db/bases/
 composer.lock

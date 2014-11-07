@@ -1,0 +1,17 @@
+#!/usr/bin/env php
+<?php
+require_once __DIR__ . '/../include.php';
+use Solve\Kernel\Kernel;
+use Solve\DependencyInjection\DependencyContainer;
+
+$dc = new DependencyContainer(array(
+    'consoleRequest' => array(
+        'className' => '\Solve\Router\ConsoleRequest'
+    ),
+    'application' => array(
+        'className' => '\Solve\Application\ConsoleApplication'
+    ),
+));
+$kernel = Kernel::getMainInstance($dc);
+$kernel->getEnvironment()->setProjectRoot(__DIR__. '/' , true);
+$kernel->run();

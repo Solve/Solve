@@ -20,24 +20,27 @@ class ConsoleRequest {
          * @var Request $request
          */
         $request = $event->getParameters();
-        $params = array_splice($_SERVER['argv'], 1);
-        $request->setUri(str_replace(':', '/',array_shift($params)));
-        foreach($params as $param) {
+        $params  = array_splice($_SERVER['argv'], 1);
+        $uri = str_replace(':', '/', array_shift($params));
+        if (empty($uri)) $uri = '/';
+
+        $request->setUri('console' . $uri);
+        foreach ($params as $param) {
             $m = array();
             preg_match('#--(?P<key>[-\.\w\d]+)(\s?=\s?(?P<value>.+))?#is', $param, $m);
             if (!empty($m)) {
                 $request->setVar($m['key'], array_key_exists('value', $m) ? $m['value'] : true);
             } else {
-                $request->addParam(trim($param));
+                $request->getVars()->setDeepValue('params/'.trim($param), true);
             }
         }
     }
 
     public function getEventListeners() {
         $events = array(
-            'request.build'     => array(
-                'listener'      => array($this, 'onRequestBuild'),
-                'parameters'    => array()
+            'route.buildRequest' => array(
+                'listener'   => array($this, 'onRequestBuild'),
+                'parameters' => array()
             )
         );
 

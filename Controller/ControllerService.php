@@ -27,7 +27,6 @@ class ControllerService {
      */
     public static function getController($controllerName, $namespace = null) {
         if (empty($namespace)) $namespace = self::$_activeNamespace;
-
         $fullControllerName = ucfirst($namespace) . '\\Controllers\\' . ucfirst(Inflector::camelize($controllerName));
         if (empty(self::$_loadedControllers[$fullControllerName])) {
             self::$_loadedControllers[$fullControllerName] = new $fullControllerName();

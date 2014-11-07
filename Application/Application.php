@@ -24,19 +24,19 @@ use Solve\View\View;
 
 class Application {
 
-    private $_name;
-    private $_namespace;
-    private $_root;
-    private $_controllersRoot;
+    protected $_name;
+    protected $_namespace;
+    protected $_root;
+    protected $_controllersRoot;
 
     /**
      * @var ApplicationRoute
      */
-    private $_route;
+    protected $_route;
     /**
      * @var YamlStorage
      */
-    private $_config;
+    protected $_config;
 
     public function run() {
         $this->detectApplication();
@@ -46,7 +46,6 @@ class Application {
     }
 
     public function boot() {
-        $this->_root            = DC::getEnvironment()->getApplicationRoot() . $this->_config['path'];
         $this->_controllersRoot = $this->_root . 'controllers/';
         $this->_config          = new YamlStorage($this->getRoot() . 'config.yml');
         if (!$this->_config->has('routes')) {
@@ -84,11 +83,14 @@ class Application {
 
 
     public function detectApplication() {
-        DC::getEventDispatcher()->dispatchEvent('route.buildRequest', Request::getIncomeRequest());
+        $event = DC::getEventDispatcher()->dispatchEvent('route.buildRequest', Request::getIncomeRequest());
         /**
          * @var ArrayStorage $appList
          */
-        $appList        = DC::getProjectConfig('applications');
+        $appList = DC::getProjectConfig('applications');
+        if (empty($appList)) {
+            throw new \Exception('Empty application list');
+        }
         $defaultAppName = DC::getProjectConfig('defaultApplication', 'frontend');
         $this->_name    = $defaultAppName;
         $uriParts       = explode('/', (string)Request::getIncomeRequest()->getUri());
@@ -112,6 +114,7 @@ class Application {
             $this->_config['path'] = $this->_name . '/';
         }
         $this->_namespace = Inflector::camelize($this->_name);
+        $this->_root      = DC::getEnvironment()->getApplicationRoot() . $this->_config['path'];
         DC::getAutoloader()->registerNamespacePath($this->_namespace, DC::getEnvironment()->getApplicationRoot());
         ControllerService::setActiveNamespace($this->_namespace);
         return $this->_name;
@@ -149,7 +152,7 @@ class Application {
     public function getEventListeners() {
         return array(
             'kernel.ready' => array(
-                'listener'   => array($this, 'run'),
+                'listener' => array($this, 'run'),
             )
         );
     }

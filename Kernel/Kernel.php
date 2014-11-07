@@ -48,9 +48,9 @@ class Kernel {
         if (empty($dc)) $dc = new DependencyContainer();
 
         $this->_dependencyContainer = $dc;
-        $this->_dependencyContainer->setDependencyObject('kernel', $this);
         $this->loadSystemDependencies();
         $this->loadUserDependencies();
+        $this->_dependencyContainer->setDependencyObject('kernel', $this);
         $this->addEventsListeners();
     }
 
@@ -66,7 +66,7 @@ class Kernel {
 
     protected function loadSystemDependencies() {
         $initialDependencies = new YamlStorage(__DIR__ . '/kernel.dependencies.yml');
-        $this->_dependencyContainer->addDependencies($initialDependencies);
+        $this->_dependencyContainer->addDependencies($initialDependencies, false);
 
         $this->_eventDispatcher = DC::getEventDispatcher();
         $this->_environment     = Environment::createFromContext();

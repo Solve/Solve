@@ -10,6 +10,6 @@
 namespace Solve\Controller;
 
 
-class ConsoleController {
+class ConsoleController extends BaseController {
 
 }

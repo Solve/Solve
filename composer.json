@@ -18,7 +18,7 @@
         "solve/router": "*",
         "solve/slot": "*",
         "solve/autoloader": "*",
-        "solve/eventdispatcher": "*",
+        "solve/eventdispatcher": ">=v1.0.2",
         "solve/logger": ">=1.0.0",
         "solve/database": "*"
     },
