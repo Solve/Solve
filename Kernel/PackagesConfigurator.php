@@ -24,8 +24,9 @@ class PackagesConfigurator {
         }
 
         $databaseConfig = DC::getDatabaseConfig();
-        if (($profiles = $databaseConfig->get('profiles')) && !DC::getRouter()->getCurrentRequest()->isConsoleRequest()) {
-            foreach($profiles as $profileName => $profileInfo) {
+        $request        = DC::getRouter()->getCurrentRequest();
+        if (($profiles = $databaseConfig->get('profiles')) && ($request && !$request->isConsoleRequest())) {
+            foreach ($profiles as $profileName => $profileInfo) {
                 DatabaseService::configProfile($profileInfo, $profileName);
             }
             ModelOperator::getInstance(DC::getEnvironment()->getUserClassesRoot() . 'db/');
@@ -44,11 +45,11 @@ class PackagesConfigurator {
 
     public function getEventListeners() {
         return array(
-            'kernel.ready'  => array(
-                'listener'   => array($this, 'onKernelReady')
+            'kernel.ready'       => array(
+                'listener' => array($this, 'onKernelReady')
             ),
-            'environment.update'    => array(
-                'listener'=> array($this, 'onEnvironmentUpdate')
+            'environment.update' => array(
+                'listener' => array($this, 'onEnvironmentUpdate')
             )
         );
     }

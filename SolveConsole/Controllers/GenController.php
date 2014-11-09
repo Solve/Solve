@@ -60,7 +60,7 @@ class GenController extends ConsoleController {
      * @throws \Exception
      */
     public function appAction() {
-        $name = ucfirst($this->getFirstParamOrAsk('Enter controller\'s name'));;
+        $name = ucfirst($this->getFirstParamOrAsk('Enter application\'s name'));;
         FSService::makeWritable(DC::getEnvironment()->getApplicationRoot() . $name);
         $this->createCV(array(
             'name' => 'Index',
@@ -69,6 +69,12 @@ class GenController extends ConsoleController {
         $appPath = DC::getEnvironment()->getApplicationRoot() . $name . '/';
         $this->safeCreateFromTemplate($appPath . 'Views/_layout.slot', '_view_layout', array('app'=>$name));
         $this->safeCreateFromTemplate($appPath . 'config.yml', '_app_config', array('app'=>$name));
+        $config = DC::getProjectConfig();
+        if (!$config->has('applications/'.strtolower($name))) {
+            $config->set('applications/'.strtolower($name), strtolower($name));
+            $this->notify('added information to project.yml', '+ config');
+            $config->save();
+        }
     }
 
     protected function createCV($params) {

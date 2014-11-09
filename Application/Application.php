@@ -43,11 +43,9 @@ class Application {
         $this->boot();
         $this->configure();
         $this->process();
-        $this->render();
     }
 
     public function boot() {
-        $this->_controllersRoot = $this->_root . 'controllers/';
         $this->_config          = new YamlStorage($this->getRoot() . 'config.yml');
         if (!$this->_config->has('routes')) {
             throw new \Exception('Routes not found for app [' . $this->_name . '], in ' . $this->_config->getPath());
@@ -58,6 +56,7 @@ class Application {
 
     public function configure() {
         DC::getView()->setTemplatesPath($this->getRoot() . 'Views/')->setRenderEngineName('Slot');
+
     }
 
     public function process() {
@@ -68,12 +67,8 @@ class Application {
         if (ControllerService::isControllerExists('ApplicationController')) {
             ControllerService::getController('ApplicationController')->_postAction();
         }
-    }
-
-    public function render() {
         DC::getView()->render();
     }
-
 
     public function detectApplicationRoute() {
         $route = DC::getRouter()->processRequest(Request::getIncomeRequest())->getCurrentRoute();
@@ -98,6 +93,7 @@ class Application {
         $defaultAppName = DC::getProjectConfig('defaultApplication', 'frontend');
         $this->_name    = $defaultAppName;
         $uriParts       = explode('/', (string)Request::getIncomeRequest()->getUri());
+        if (count($uriParts) && $uriParts[count($uriParts)-1] == "") unset($uriParts[count($uriParts)-1]);
         if (!empty($uriParts) && ((count($uriParts) > 0) && ($uriParts[0] != '/'))) {
             foreach ($appList as $appName => $appParams) {
                 if ($appName == $defaultAppName) continue;
@@ -106,7 +102,8 @@ class Application {
                 if (strpos($uriParts[0], $appUri) === 0) {
                     array_shift($uriParts);
                     Request::getIncomeRequest()->setUri(implode('/', $uriParts));
-                    return ($this->_name = $appName);
+                    $this->_name = $appName;
+                    break;
                 }
             }
         }

@@ -1,7 +1,7 @@
 applications:
-  admin: ~
-  frontend: ~
+  admin: '~'
+  frontend: null
 defaultApplication: frontend
-name: "Test project"
+name: 'Test project'
 var1: default1
 var2: default2
