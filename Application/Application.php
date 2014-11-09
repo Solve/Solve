@@ -74,7 +74,7 @@ class Application {
         $route = DC::getRouter()->processRequest(Request::getIncomeRequest())->getCurrentRoute();
         if ($route->isNotFound()) {
             DC::getEventDispatcher()->dispatchEvent('route.notFound');
-            return false;
+            die();
         }
         $this->_route = new ApplicationRoute($route);
         return $this;
@@ -92,8 +92,8 @@ class Application {
         }
         $defaultAppName = DC::getProjectConfig('defaultApplication', 'frontend');
         $this->_name    = $defaultAppName;
-        $uriParts       = explode('/', (string)Request::getIncomeRequest()->getUri());
-        if (count($uriParts) && $uriParts[count($uriParts)-1] == "") unset($uriParts[count($uriParts)-1]);
+        $uri = (string)Request::getIncomeRequest()->getUri();
+        $uriParts       = explode('/', $uri);
         if (!empty($uriParts) && ((count($uriParts) > 0) && ($uriParts[0] != '/'))) {
             foreach ($appList as $appName => $appParams) {
                 if ($appName == $defaultAppName) continue;

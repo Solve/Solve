@@ -56,6 +56,17 @@ class GenController extends ConsoleController {
     }
 
     /**
+     * Generates Slot template engine helper/block
+     */
+    public function helperAction() {
+        $name = ucfirst($this->getFirstParamOrAsk('Enter application\'s name'));;
+        $path = DC::getEnvironment()->getUserClassesRoot() . 'helpers/';
+        FSService::makeWritable($path);
+        $this->safeCreateFromTemplate($path . $name . 'Block.php', '_helper');
+
+    }
+
+    /**
      * Generates new application
      * @throws \Exception
      */

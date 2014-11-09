@@ -9,6 +9,28 @@
 
 namespace SolveConsole\Controllers;
 
+/**
+ * old
+ *  :update-all
+:update-class
+:update-db
+:drop-db
+:build-db
+:wizard
+:data-dump
+:data-load
+:profile-configure
+:profile-activate
+:gen-model
+:sql
+:show-settings
+:show-table
+:count
+:update-config
+:ability-add
+:ability-configure
+:update-relations
+ */
 
 use Solve\Config\ConfigService;
 use Solve\Controller\ConsoleController;

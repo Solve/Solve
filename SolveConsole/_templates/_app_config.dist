@@ -1,4 +1,8 @@
 routes:
+
+  controller_action:
+    pattern: '{controller}/({action}/)?'
+
   default:
     pattern: '/'
 

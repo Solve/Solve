@@ -14,7 +14,7 @@ use Solve\Database\QC;
 use Solve\Kernel\DC;
 use Solve\View\View;
 
-class IndexController extends BaseController {
+class IndexTestController extends BaseController {
 
     public function _preAction() {
         echo "index controller pre \n";

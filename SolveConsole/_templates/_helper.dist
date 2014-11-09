@@ -1,0 +1,24 @@
+<?php
+/*
+ * This is solve helper
+ * created: __DATE__
+ */
+
+use \Solve\Slot\Blocks\BaseBlock;
+
+/**
+ * @ not paired
+ * @ not runtime
+ */
+class __NAME__Block extends BaseBlock {
+
+    public function processBlockStart() {
+        return "block " . __NAME __ . " started";
+    }
+
+    public function processBlockEnd() {
+        return "block " . __NAME __ . " finished";
+    }
+
+
+}

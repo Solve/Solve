@@ -11,6 +11,7 @@ namespace Solve\View\RenderEngine;
 
 use Solve\Kernel\DC;
 use Solve\Slot\Slot;
+use Solve\Utils\FSService;
 use Solve\Utils\Inflector;
 
 class SlotRenderEngine extends BaseRenderEngine {
@@ -25,8 +26,16 @@ class SlotRenderEngine extends BaseRenderEngine {
         $this->_slot = new Slot();
         $this->_slot->setTemplateDir($this->_view->getTemplatesPath());
         $this->_slot->setCompileDir(DC::getEnvironment()->getTmpRoot() . 'templates/' . DC::getApplication()->getName() . '/');
+        $fs = new FSService();
+
+        DC::getAutoloader()->registerSharedPath(DC::getEnvironment()->getUserClassesRoot() . 'helpers');
+        if (($files = $fs->in(DC::getEnvironment()->getUserClassesRoot() . 'helpers')->find('*Block.php'))) {
+            foreach ($files as $file) {
+                $this->_slot->registerBlock(strtolower(substr($file, strrpos($file, DIRECTORY_SEPARATOR) + 1, -9)), '\\');
+            }
+        }
     }
-    
+
     public function fetchHtml($vars = array(), $templateName) {
         $template = $templateName . '.slot';
         return $this->_slot->fetchTemplate($template, $vars);
