@@ -25,13 +25,14 @@ class ConsoleRequest {
         if (empty($uri)) $uri = '/';
 
         $request->setUri($uri);
+        $index = 0;
         foreach ($params as $param) {
             $m = array();
             preg_match('#--(?P<key>[-\.\w\d]+)(\s?=\s?(?P<value>.+))?#is', $param, $m);
             if (!empty($m)) {
                 $request->setVar($m['key'], array_key_exists('value', $m) ? $m['value'] : true);
             } else {
-                $request->getVars()->setDeepValue('params/'.trim($param), true);
+                $request->getVars()->setDeepValue('params/'.$index++, trim($param));
             }
         }
     }

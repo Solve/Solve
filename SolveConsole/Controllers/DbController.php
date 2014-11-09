@@ -16,10 +16,10 @@ use Solve\Kernel\DC;
 
 /**
  * Class DbController
- * @help operate with database & models
  * @package SolveConsole\Controllers
  *
  * Class DbController is a database console operator
+ * @help operate with database & models
  *
  * @version 1.0
  * @author Alexandr Viniychuk <alexandr.viniychuk@icloud.com>
@@ -46,10 +46,16 @@ class DbController extends ConsoleController {
                 $config->set('profiles/' . $profileName . '/' . $field, $value);
             }
             $config->save();
-            $this->information('saved', ConfigService::getConfigsPath() . 'database.yml');
+            $this->notify(ConfigService::getConfigsPath() . 'database.yml', 'saved');
         } else {
             $this->writeln('exiting.');
         }
+    }
+
+    /**
+     * Update database and models
+     */
+    public function updateAction() {
     }
 
 

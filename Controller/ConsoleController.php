@@ -44,9 +44,10 @@ class ConsoleController extends BaseController {
                 $commandMethod = str_replace('_', '-', Inflector::underscore(substr($method->getName(), 0, -6)));
 
                 $doc = DocComment::parseFromString($method->getDocComment());
-                $methodsList .= "  <bold>" . $commandMethod . "\t</bold>"
-                    . $doc->getDescription() . "\n"
-                    . "\t\t" . $doc->getAnnotationsAsString('optional')
+                $optional = $doc->getAnnotationsAsString('optional');
+                $methodsList .= "  <bold>" . $commandMethod . (strlen($commandMethod) < 16 ? str_repeat(' ', 12 - strlen($commandMethod)) : '') . "\t</bold>"
+                    . $doc->getDescription()
+                    . ($optional ? "\n\t\t" . $optional : "")
                     . "\n";
             }
         }
@@ -66,7 +67,6 @@ class ConsoleController extends BaseController {
     }
 
     public function printHelp() {
-        $this->message('Command help:');
     }
 
     protected function requireParametersCount($count) {
@@ -77,18 +77,25 @@ class ConsoleController extends BaseController {
     }
 
     protected function paramsError($message) {
-        $this->warning($message . PHP_EOL);
+        $this->error($message);
         die();
     }
 
     public function ask($message, $default = null) {
         $res = null;
         while (!$res) {
-            $this->writeln($message . ($default ? '(<bg_dark_gray>' . $default . '</bg_dark_gray>)' : '') . ':', false);
+            $this->writeln($message . ($default ? '(<bg_dark_gray>' . $default . '</bg_dark_gray>)' : '') . ': ', false);
             $res = $this->getInput();
             if ((!$res || ($res == "")) && $default) $res = $default;
         }
         return trim($res);
+    }
+
+    public function getFirstParamOrAsk($what) {
+        if (!($var = $this->route->getRequestVar('params/0'))) {
+            while(!($var)) {$var = $this->ask($what);}
+        }
+        return $var;
     }
 
     public function confirm($message, $default = false) {
@@ -114,20 +121,16 @@ class ConsoleController extends BaseController {
         return $result;
     }
 
-    public function information($title, $description = null) {
-        $this->writeln('<green>'.$title.':</green> ' . $description . "\n");
+    public function notify($description = null, $title = null) {
+        $this->writeln('<green>'.$title.'</green> ' . $description);
     }
 
-    public function message($str) {
-        $this->writeln('<green>Message:</green> ' . $str . "\n");
+    public function warning($description = null, $title = 'warning:') {
+        $this->writeln('<yellow>'.$title.'</yellow> ' . $description);
     }
 
-    public function warning($str) {
-        $this->writeln('<yellow>Warning:</yellow> ' . $str . "\n");
-    }
-
-    public function error($str) {
-        $this->writeln('<red>Error:</red> ' . $str . "\n");
+    public function error($description = null, $title = 'warning:') {
+        $this->writeln('<red>' . $title . '</red> ' . $description);
         die(1);
     }
 

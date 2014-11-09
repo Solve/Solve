@@ -1,6 +1,6 @@
 applications:
   admin: ~
-  frontend:
+  frontend: ~
 defaultApplication: frontend
 name: "Test project"
 var1: default1

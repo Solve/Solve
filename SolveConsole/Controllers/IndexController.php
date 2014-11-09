@@ -18,7 +18,8 @@ class IndexController extends ConsoleController {
     public function defaultAction() {
         $this->writeln('Available commands:');
         $controllers  = array(
-            'SolveConsole\\Controllers\\DbController'
+            'SolveConsole\\Controllers\\DbController',
+            'SolveConsole\\Controllers\\GenController',
         );
         $commandsList = '';
         foreach ($controllers as $controllerName) {

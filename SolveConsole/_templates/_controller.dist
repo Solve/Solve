@@ -1,0 +1,19 @@
+<?php
+/*
+ * This file is a part of __PROJECT__ project.
+ *
+ * created: __DATE__
+ */
+
+namespace __APP__\Controllers;
+
+
+use Solve\Controller\BaseController;
+
+class __NAME__Controller extends BaseController {
+
+    public function defaultAction() {
+
+    }
+
+}

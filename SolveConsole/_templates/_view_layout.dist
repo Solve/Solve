@@ -1,0 +1,3 @@
+<h1>Layout for application __APP__</h1>
+<b>inner template:</b><br/>
+{{ innerTemplateContent }}
