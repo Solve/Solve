@@ -1,0 +1,133 @@
+<?php
+/*
+ * This file is a part of Solve framework.
+ *
+ * @author Alexandr Viniychuk <alexandr.viniychuk@icloud.com>
+ * @copyright 2009-2014, Alexandr Viniychuk
+ * created: 11.11.14 15:03
+ */
+
+namespace Solve\Controller;
+
+
+use Solve\Kernel\DC;
+use Solve\Security\SecurityService;
+use Solve\Session\RemoteSessionManager;
+use Solve\Storage\ArrayStorage;
+use Solve\Storage\SessionStorage;
+
+class ApiController extends BaseController {
+
+
+    protected $_status = 200;
+    protected $_sessionToken;
+    protected $_message;
+    protected $_data;
+    /**
+     * @var ArrayStorage
+     */
+    protected $_params;
+
+    /**
+     * @var SessionStorage
+     */
+    protected $_sessionStorage;
+
+    protected $_unprotectedMethods = array();
+
+    public function __construct() {
+        parent::__construct();
+
+        $this->_sessionToken   = RemoteSessionManager::getSessionToken();
+        $this->_sessionStorage = new SessionStorage(null, 'api_session');
+        $this->_data           = new ArrayStorage();
+
+        $action = DC::getApplication()->getRoute()->getActionName();
+        $action = substr($action, 0, -6);
+        if (!in_array($action, $this->_unprotectedMethods)) {
+            $this->requireAuthorization();
+        }
+    }
+
+    public function setMessage($message, $statusCode = 200) {
+        $this->_message = $message;
+        $this->_status  = $statusCode;
+    }
+
+    public function setError($message, $statusCode = 406) {
+        $this->_status  = $statusCode;
+        $this->_message = $message;
+    }
+
+    public function setData($value, $varName = null) {
+        $this->_data->setDeepValue($varName, $value);
+    }
+
+    public function returnErrorStatus($message, $statusCode = 406) {
+        $this->setError($message, $statusCode);
+        $this->_postAction();
+        $this->view->render();
+        die();
+    }
+
+    public function _postAction() {
+        $this->view->setVar('status', $this->_status);
+        if ($this->_message) {
+            $this->view->setVar('message', $this->_message);
+        }
+        if (!$this->_data->isEmpty()) {
+            $this->view->setVar('data', $this->_data->getArray());
+        }
+    }
+
+    protected function requireData($paramsNames, $optionalNames = null) {
+        $paramsRequired = is_array($paramsNames) ? $paramsNames : ($paramsNames ? explode(',', $paramsNames) : array());
+        $errors         = array();
+        $params         = array();
+        $data           = $this->request->getVar('data');
+
+        if (!empty($paramsRequired)) {
+            foreach ($paramsRequired as $name) {
+                $name = trim($name);
+                if (!empty($data) && array_key_exists($name, $data)) {
+                    $params[$name] = $this->request->getVar('data/' . $name);
+                } else {
+                    $errors[] = $name;
+                }
+            }
+        }
+
+        $optionalNames = !empty($optionalNames) ? explode(',', $optionalNames) : array();
+
+        foreach ($optionalNames as $name) {
+            $name = trim($name);
+            if (!empty($data) && array_key_exists($name, $data)) {
+                $params[$name] = $this->request->getVar('data/' . $name);
+            }
+        }
+
+        if (count($errors)) {
+            $this->returnErrorStatus('You have to specify fields: ' . implode(',', $errors));
+        } else {
+            return $params;
+        }
+    }
+
+    public function requireAuthorization() {
+        if (SecurityService::getInstance()->isAuthorized()) {
+            return true;
+        }
+        $this->view->setVar('isLoggedIn', false);
+        $this->returnErrorStatus('unauthorized', 401);
+    }
+
+    public function getUser($field = null) {
+        $this->requireAuthorization();
+        if (is_null($field)) {
+            return $this->_sessionStorage['user'];
+        } else {
+            return $this->_sessionStorage['user'][$field];
+        }
+    }
+
+}

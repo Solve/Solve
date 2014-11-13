@@ -23,15 +23,17 @@ class BaseController {
 
     public $view;
     public $router;
+    public $request;
     /**
      * @var ApplicationRoute
      */
     public $route;
 
     public function __construct() {
-        $this->view   = DC::getView();
-        $this->router = DC::getRouter();
-        $this->route  = DC::getApplication()->getRoute();
+        $this->view    = DC::getView();
+        $this->router  = DC::getRouter();
+        $this->route   = DC::getApplication()->getRoute();
+        $this->request = $this->router->getCurrentRequest();
     }
 
     public function redirectToUri($relativeUri) {
