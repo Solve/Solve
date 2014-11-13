@@ -41,6 +41,8 @@ class PackagesConfigurator {
         ConfigService::setConfigsPath(DC::getEnvironment()->getConfigRoot());
         ConfigService::loadAllConfigs();
         DC::getLogger()->setLogsPath(DC::getEnvironment()->getTmpRoot() . 'log');
+        DC::getAutoloader()->registerSharedPath(DC::getEnvironment()->getUserClassesRoot(), true);
+        DC::getAutoloader()->registerNamespaceSharedPaths(DC::getEnvironment()->getUserClassesRoot() . 'classes/', true);
     }
 
     public function getEventListeners() {
