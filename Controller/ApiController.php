@@ -15,6 +15,7 @@ use Solve\Security\SecurityService;
 use Solve\Session\RemoteSessionManager;
 use Solve\Storage\ArrayStorage;
 use Solve\Storage\SessionStorage;
+use Solve\View\View;
 
 class ApiController extends BaseController {
 
