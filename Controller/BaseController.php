@@ -42,15 +42,15 @@ class BaseController {
             $relativeUri = '';
         }
         $fullUrl = $request->getProtocol() . '://' . $request->getHost() . '/'
-            . DC::getApplication()->getConfig()->get('uri')
+            . DC::getApplication()->getName() . '/'
             . $relativeUri;
-
         $response = new Response();
-        $response->setStatusCode(HttpStatus::HTTP_OK);
+        $response->setStatusCode(HttpStatus::HTTP_FOUND);
         $response->setHeader('Location', $fullUrl);
-        if (!$response->sendHeaders()) {
+        if (headers_sent()) {
             DC::getLogger()->add('Cannot redirect to ' . $relativeUri);
         }
+        $response->send();
         die();
     }
 
