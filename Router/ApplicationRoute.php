@@ -8,6 +8,7 @@
  */
 
 namespace Solve\Router;
+use Solve\Utils\Inflector;
 
 /**
  * Class ApplicationRoute
@@ -17,8 +18,8 @@ namespace Solve\Router;
  *
  * @method string getControllerName()
  * @method string getActionName()
- * @method string setControllerName()
- * @method string setActionName()
+ * @method string setControllerName($name)
+ * @method string setActionName($name)
  *
  * @version 1.0
  * @author Alexandr Viniychuk <alexandr.viniychuk@icloud.com>
@@ -27,7 +28,7 @@ class ApplicationRoute extends Route {
 
     protected $_systemPatterns = array(
         'controller' => array('Index', '{name}Controller', 'ucfirst'),
-        'action'     => array('default', '{name}Action', array('Inflector', 'camelize')),
+        'action'     => array('default', '{name}Action', array('Solve\\Router\\ApplicationRoute', '_prepareActionName')),
     );
 
     protected $_systemVars = array();
@@ -41,7 +42,7 @@ class ApplicationRoute extends Route {
         $this->setUriPattern($route->getUriPattern());
         foreach ($this->_systemPatterns as $varName => $params) {
             $value = $route->getVar($varName, $params[0]);
-            if (!empty($params[2]) && is_callable($params[2])) {
+            if (!empty($params[2])) {
                 $value = call_user_func($params[2], $value);
             }
             $this->_systemVars[$varName.'name'] = str_replace('{name}', $value, $params[1]);
@@ -60,6 +61,10 @@ class ApplicationRoute extends Route {
             }
         }
         return null;
+    }
+
+    private static function _prepareActionName($string) {
+        return lcfirst(Inflector::camelize($string));
     }
 
 }
