@@ -195,7 +195,9 @@ class View extends \stdClass {
         if ($this->_formatVars->has($format)) {
             $combinedVars->extendDeepValue($this->_formatVars->get($format));
         }
-        $combinedVars['_baseUri'] = DC::getRouter()->getBaseUri();
+        if ($format == View::FORMAT_HTML) {
+            $combinedVars['_baseUri'] = DC::getRouter()->getBaseUri();
+        }
         return $combinedVars;
     }
 

@@ -17,6 +17,8 @@ namespace Solve\Router;
  *
  * @method string getControllerName()
  * @method string getActionName()
+ * @method string setControllerName()
+ * @method string setActionName()
  *
  * @version 1.0
  * @author Alexandr Viniychuk <alexandr.viniychuk@icloud.com>
@@ -51,6 +53,11 @@ class ApplicationRoute extends Route {
         if (substr($method, 0, 3) == 'get') {
             $varName = strtolower(substr($method, 3));
             return !empty($this->_systemVars[$varName]) ? $this->_systemVars[$varName] : null;
+        } elseif (substr($method, 0, 3) == 'set') {
+            $varName = strtolower(substr($method, 3));
+            if (!empty($this->_systemVars[$varName])) {
+                $this->_systemVars[$varName] = $params[0];
+            }
         }
         return null;
     }

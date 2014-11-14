@@ -22,18 +22,18 @@ class PackagesConfigurator {
         if ($webRoot = DC::getProjectConfig('webRoot')) {
             DC::getEnvironment()->setWebRoot($webRoot);
         }
-
         $databaseConfig = DC::getDatabaseConfig();
         $request        = DC::getRouter()->getCurrentRequest();
-        if (($profiles = $databaseConfig->get('profiles')) && ($request && !$request->isConsoleRequest())) {
+        if (($profiles = $databaseConfig->get('profiles'))) {
             foreach ($profiles as $profileName => $profileInfo) {
                 DatabaseService::configProfile($profileInfo, $profileName);
             }
-            ModelOperator::getInstance(DC::getEnvironment()->getUserClassesRoot() . 'db/');
-            if ($databaseConfig->get('autoUpdateAll')) {
-                ModelOperator::getInstance()->generateAllModelClasses()->updateDBForAllModels();;
+            if (empty($request) || ($request && !$request->isConsoleRequest())) {
+                ModelOperator::getInstance(DC::getEnvironment()->getUserClassesRoot() . 'db/');
+                if ($databaseConfig->get('autoUpdateAll')) {
+                    ModelOperator::getInstance()->generateAllModelClasses()->updateDBForAllModels();;
+                }
             }
-
         }
     }
 
@@ -42,6 +42,8 @@ class PackagesConfigurator {
         ConfigService::loadAllConfigs();
         DC::getLogger()->setLogsPath(DC::getEnvironment()->getTmpRoot() . 'log');
         DC::getAutoloader()->registerSharedPath(DC::getEnvironment()->getUserClassesRoot(), true);
+        DC::getAutoloader()->registerSharedPath(DC::getEnvironment()->getUserClassesRoot() . 'db/bases');
+        DC::getAutoloader()->registerSharedPath(DC::getEnvironment()->getUserClassesRoot() . 'db/classes');
         DC::getAutoloader()->registerNamespaceSharedPaths(DC::getEnvironment()->getUserClassesRoot() . 'classes/', true);
     }
 

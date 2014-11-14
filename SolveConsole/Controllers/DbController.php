@@ -34,6 +34,10 @@ namespace SolveConsole\Controllers;
 
 use Solve\Config\ConfigService;
 use Solve\Controller\ConsoleController;
+use Solve\Database\DatabaseService;
+use Solve\Database\Models\DBOperator;
+use Solve\Database\Models\ModelOperator;
+use Solve\Database\QC;
 use Solve\Kernel\DC;
 
 /**
@@ -77,9 +81,26 @@ class DbController extends ConsoleController {
     /**
      * Update database and models
      */
-    public function updateAction() {
+    public function updateAllAction() {
+        QC::executeSQL('SET FOREIGN_KEY_CHECKS = 0');
+        ModelOperator::getInstance(DC::getEnvironment()->getUserClassesRoot().'db/')->updateDBForAllModels();
+        ModelOperator::getInstance()->generateAllModelClasses();
+        $this->writeln('DB updated');
     }
 
+    /**
+     * Created database for profile default
+     */
+    public function createDbAction() {
+        $config = DC::getDatabaseConfig('profiles/default');
+        DatabaseService::configProfile(array(
+            'user'    => $config['user'],
+            'pass'    => $config['pass'],
+        ));
+
+        DBOperator::getInstance()->createDB($config['name']);
+        $this->notify($config['name'], '+Database created:');
+    }
 
 
 }
