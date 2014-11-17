@@ -42,6 +42,7 @@ class Application {
         $this->detectApplication();
         $this->boot();
         $this->configure();
+        $this->detectApplicationRoute();
         $this->process();
     }
 
@@ -59,7 +60,6 @@ class Application {
             }
         }
         DC::getRouter()->addRoutes($this->_config->get('routes'));
-        $this->detectApplicationRoute();
     }
 
     public function configure() {
