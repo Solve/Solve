@@ -125,8 +125,7 @@ class View extends \stdClass {
     }
 
     protected function detectResponseFormat() {
-        $request = DC::getRouter()->getCurrentRequest();
-        $accept = $request ? $request->getAcceptType() : 'text/html';
+        $accept = DC::getRouter()->getCurrentRequest()->getAcceptType();
         if (strpos($accept, 'json') !== false) {
             return static::FORMAT_JSON;
         } elseif (strpos($accept, 'text/html') !== false) {
