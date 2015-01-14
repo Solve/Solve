@@ -114,7 +114,7 @@ class Application {
             );
         }
         if (empty($this->_config['path'])) {
-            $this->_config['path'] = $this->_name . '/';
+            $this->_config['path'] = Inflector::camelize($this->_name) . '/';
         }
         $this->_namespace = Inflector::camelize($this->_name);
         $this->_root      = DC::getEnvironment()->getApplicationRoot() . $this->_config['path'];
