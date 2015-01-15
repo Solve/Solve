@@ -30,4 +30,10 @@ class RemoteSessionManager {
         return session_id();
     }
 
-} 
+    public function getEventListeners() {
+        return array(
+            'kernel.boot'       => array(
+                'listener' => array($this, 'onKernelBoot')
+            )
+        );
+    }}
