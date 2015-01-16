@@ -64,7 +64,10 @@ class ApiController extends BaseController {
         $this->_data->setDeepValue($varName, $value);
     }
 
-    public function returnErrorStatus($message, $statusCode = 406) {
+    public function returnErrorStatus($message, $statusCode = 406, $required = false) {
+        if ($required) {
+            $this->view->setVar('required', $required);
+        }
         $this->setError($message, $statusCode);
         $this->_postAction();
         $this->view->render();
@@ -108,7 +111,7 @@ class ApiController extends BaseController {
         }
 
         if (count($errors)) {
-            $this->returnErrorStatus('You have to specify fields: ' . implode(',', $errors));
+            $this->returnErrorStatus('You have to specify fields: ' . implode(',', $errors), 406, $errors);
         } else {
             return $params;
         }
