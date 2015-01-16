@@ -71,4 +71,7 @@ class SecurityService {
         return $this->_storage['user'];
     }
 
+    public function setAuthorizedUser($user) {
+        $this->_storage['user'] = $user;
+    }
 }
