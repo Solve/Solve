@@ -12,6 +12,7 @@ namespace Solve\Kernel;
 
 use Solve\Config\ConfigService;
 use Solve\Database\DatabaseService;
+use Solve\Database\Models\Abilities\FilesAbility;
 use Solve\Database\Models\ModelOperator;
 use Solve\EventDispatcher\BaseEvent;
 
@@ -45,6 +46,7 @@ class PackagesConfigurator {
         DC::getAutoloader()->registerSharedPath(DC::getEnvironment()->getUserClassesRoot() . 'db/bases');
         DC::getAutoloader()->registerSharedPath(DC::getEnvironment()->getUserClassesRoot() . 'db/classes');
         DC::getAutoloader()->registerNamespaceSharedPaths(DC::getEnvironment()->getUserClassesRoot() . 'classes/', true);
+        FilesAbility::setBaseStoreLocation(DC::getEnvironment()->getUploadRoot());
     }
 
     public function getEventListeners() {
