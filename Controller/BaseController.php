@@ -67,6 +67,10 @@ class BaseController {
         }
     }
 
+    public function getRequestData($path = null, $default = null) {
+        return $this->route->getRequestVar($path, $default);
+    }
+
     public function _preAction() {
     }
 
