@@ -127,10 +127,11 @@ class ApiController extends BaseController {
 
     public function getUser($field = null) {
         $this->requireAuthorization();
+        $user = SecurityService::getInstance()->getUser();
         if (is_null($field)) {
-            return $this->_sessionStorage['user'];
+            return $user;
         } else {
-            return $this->_sessionStorage['user'][$field];
+            return isset($user[$field]) ?$user[$field] : null;
         }
     }
 
