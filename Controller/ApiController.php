@@ -35,6 +35,7 @@ class ApiController extends BaseController {
     protected $_sessionStorage;
 
     protected $_unprotectedMethods = array();
+    protected $_securityServiceScope = 'default';
 
     public function __construct() {
         parent::__construct();
@@ -118,7 +119,7 @@ class ApiController extends BaseController {
     }
 
     public function requireAuthorization() {
-        if (SecurityService::getInstance()->isAuthorized()) {
+        if (SecurityService::getInstance($this->_securityServiceScope)->isAuthorized()) {
             return true;
         }
         $this->view->setVar('isLoggedIn', false);
@@ -127,7 +128,7 @@ class ApiController extends BaseController {
 
     public function getUser($field = null) {
         $this->requireAuthorization();
-        $user = SecurityService::getInstance()->getUser();
+        $user = SecurityService::getInstance($this->_securityServiceScope)->getUser();
         if (is_null($field)) {
             return $user;
         } else {
