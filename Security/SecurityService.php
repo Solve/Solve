@@ -12,6 +12,7 @@ namespace Solve\Security;
 
 use Solve\Kernel\DC;
 use Solve\Storage\SessionStorage;
+use Solve\Database\QC;
 
 class SecurityService {
 
