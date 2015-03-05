@@ -47,14 +47,23 @@ class SecurityService {
         return false;
     }
 
-    public function checkCredentials($params) {
-        if (!empty($params['password']) && $params['password'] == '1') {
-            $this->_storage['user'] = $params;
-            return true;
+    public function checkCredentials($params, $userTable = 'acl_users') {
+        if (!empty($params['password']) && !empty($params['email'])) {
+            $user = QC::create($userTable)
+                ->where(array('email'=>$params['email'],'password'=>md5($params['password'])))
+                ->execute();
+
+            if (!empty($user)) {
+                $this->_storage['user'] = $user;
+                return true;
+            } else {
+                return false;
+            }
         } else {
             return false;
         }
     }
+
 
     public function isAuthorized($right = 0) {
         return (!empty($this->_storage['user']));
