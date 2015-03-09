@@ -102,7 +102,8 @@ class ApiController extends BaseController {
             }
         }
 
-        $optionalNames = !empty($optionalNames) ? explode(',', $optionalNames) : array();
+        $optionalNames = !empty($optionalNames) ?
+            (is_array($optionalNames) ? $optionalNames : explode(',', $optionalNames)) : array();
 
         foreach ($optionalNames as $name) {
             $name = trim($name);
