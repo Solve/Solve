@@ -24,7 +24,8 @@
         "kevinlebrun/colors.php": "*"
     },
     "autoload": {
-        "psr-4": { "Solve\\": "" }
+        "psr-4": { "Solve\\": "" },
+        "files": ["functions.php"]
     },
     "target-dir": ""
 }

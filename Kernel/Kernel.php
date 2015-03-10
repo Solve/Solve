@@ -22,6 +22,13 @@ use Solve\Router\Router;
 use Solve\Storage\YamlStorage;
 use Solve\Utils\Inflector;
 
+/**
+ * Class Kernel
+ * @package Solve\Kernel
+ *
+ * @version 1.0
+ * @author Alexandr Viniychuk <alexandr.viniychuk@icloud.com>
+ */
 class Kernel {
 
     /**
@@ -70,7 +77,7 @@ class Kernel {
 
         $this->_eventDispatcher = DC::getEventDispatcher();
         $this->_environment     = Environment::createFromContext();
-        DC::getAutoloader()->register(false);
+        DC::getAutoloader()->register(false)->registerNamespaceSharedPaths($this->_environment->getUserClassesRoot() . 'classes');
     }
 
 

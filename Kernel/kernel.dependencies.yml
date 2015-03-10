@@ -16,3 +16,5 @@ view:
   className: 'Solve\View\View'
 response:
   className: 'Solve\Http\Response'
+exceptionHandler:
+  className: 'Solve\Debug\ExceptionHandler'

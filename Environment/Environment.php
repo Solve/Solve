@@ -18,7 +18,6 @@ use Solve\Storage\ArrayStorage;
  * @package Solve\Environment
  *
  * Class Environment is represents environment
- *
  * @method string getProjectRoot()
  *
  * @method string getConfigRoot()
@@ -63,6 +62,12 @@ class Environment {
         return $environment;
     }
 
+    public function setProjectRoot($path, $updateOther = false) {
+        $this->_vars['roots']['project'] = $path;
+        if ($updateOther) $this->updateFromProjectRoot();
+        DC::getEventDispatcher()->dispatchEvent('environment.update', 'project');
+    }
+
     protected function updateFromProjectRoot() {
         $projectRoot = $this->getProjectRoot();
         $this->_vars->setDeepValue('roots/application', $projectRoot . 'app/');
@@ -71,12 +76,6 @@ class Environment {
         $this->_vars->setDeepValue('roots/userclasses', $projectRoot . 'src/');
         $this->_vars->setDeepValue('roots/web', $projectRoot . 'web/');
         $this->_vars->setDeepValue('roots/upload', $this->getWebRoot() . 'upload/');
-    }
-
-    public function setProjectRoot($path, $updateOther = false) {
-        $this->_vars['roots']['project'] = $path;
-        if ($updateOther) $this->updateFromProjectRoot();
-        DC::getEventDispatcher()->dispatchEvent('environment.update', 'project');
     }
 
     public function __call($method, $params) {
