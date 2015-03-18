@@ -33,7 +33,7 @@ class ExceptionHandler {
         $content = '<div style="font-size: 13px; font-family: Consolas, Menlo, Monaco, monospace;white-space: pre-wrap;">';
 
         $htmlTrace = "<b>\nLast arguments(" . count($fullTrace[0]['args']) . "):</b>\n"
-            . implode("\n", dumpAsString($fullTrace[0]['args']))
+            . dumpAsString($fullTrace[0]['args'])
             . "<b>\n\nCall stack:</b>\n<table style='font-size: 13px;'>";
         foreach ($fullTrace as $item) {
             $info = self::compileShortCallee($item);
