@@ -31,7 +31,7 @@ class SlotRenderEngine extends BaseRenderEngine {
         DC::getAutoloader()->registerSharedPath(DC::getEnvironment()->getUserClassesRoot() . 'helpers');
         if (($files = $fs->in(DC::getEnvironment()->getUserClassesRoot() . 'helpers')->find('*Block.php'))) {
             foreach ($files as $file) {
-                $this->_slot->registerBlock(strtolower(substr($file, strrpos($file, DIRECTORY_SEPARATOR) + 1, -9)), '\\');
+                $this->_slot->registerBlock(Inflector::underscore(substr($file, strrpos($file, DIRECTORY_SEPARATOR) + 1, -9)), '\\');
             }
         }
     }

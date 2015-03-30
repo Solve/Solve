@@ -51,6 +51,11 @@ class Application {
             throw new \Exception('Routes not found for app [' . $this->_name . '], in ' . $this->_config->getPath());
         }
         DC::getRouter()->addRoutes($this->_config->get('routes'));
+        if ($events = $this->_config->get('events')) {
+            foreach($events as $event => $listener) {
+                DC::getEventDispatcher()->addEventListener($event, $listener);
+            }
+        }
         $this->detectApplicationRoute();
     }
 
@@ -74,7 +79,7 @@ class Application {
         $route = DC::getRouter()->processRequest(Request::getIncomeRequest())->getCurrentRoute();
         if ($route->isNotFound()) {
             DC::getEventDispatcher()->dispatchEvent('route.notFound');
-            die();
+            if (DC::getProjectConfig('devMode')) throw new \Exception('Route not found');
         }
         $this->_route = new ApplicationRoute($route);
         return $this;

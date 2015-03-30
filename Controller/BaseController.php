@@ -41,9 +41,11 @@ class BaseController {
         if ($relativeUri == '/') {
             $relativeUri = '';
         }
+        $applicationUrlPart = DC::getApplication()->getName()  == 'frontend' ? '' : DC::getApplication()->getName() . '/';
         $fullUrl = $request->getProtocol() . '://' . $request->getHost() . '/'
-            . DC::getApplication()->getName() . '/'
+            . $applicationUrlPart
             . $relativeUri;
+        $fullUrl = str_replace('//', '/', $fullUrl);
         $response = new Response();
         $response->setStatusCode(HttpStatus::HTTP_FOUND);
         $response->setHeader('Location', $fullUrl);
