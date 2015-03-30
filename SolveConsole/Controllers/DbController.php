@@ -37,6 +37,7 @@ use Solve\Controller\ConsoleController;
 use Solve\Database\DatabaseService;
 use Solve\Database\Models\DBOperator;
 use Solve\Database\Models\ModelOperator;
+use Solve\Database\Models\ModelStructure;
 use Solve\Database\QC;
 use Solve\Kernel\DC;
 
@@ -61,10 +62,10 @@ class DbController extends ConsoleController {
         $this->writeln('DB wizard for a profile');
         $profileName = $this->ask('Enter the <underline>profile name</underline> to edit', 'default');
         $fields = $this->askArray(array(
-            'name'  => array('DB name'),
-            'user'  => array('DB user', 'root'),
-            'pass'  => array('DB password', 'root'),
-            'host'  => array('DB host', '127.0.0.1'),
+            'name'  => array('DB name',),
+            'user'  => array('DB user', 'root',),
+            'pass'  => array('DB password', 'root',),
+            'host'  => array('DB host', '127.0.0.1',),
         ));
         if ($this->confirm('Write to file', true)) {
             $config = DC::getDatabaseConfig();
@@ -102,5 +103,12 @@ class DbController extends ConsoleController {
         $this->notify($config['name'], '+Database created:');
     }
 
+    public function addAbilityAction() {
+        $modelName = $this->getFirstParamOrAsk('Enter model name');
+        $abilityName = $this->ask('Enter ability to add');
+        $structure = ModelStructure::getInstanceForModel($modelName);
+        $structure->addAbility($abilityName);
+        $structure->saveStructure();
+    }
 
 }
