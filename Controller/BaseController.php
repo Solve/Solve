@@ -42,13 +42,13 @@ class BaseController {
             $relativeUri = '';
         }
         $applicationUrlPart = DC::getApplication()->getName()  == 'frontend' ? '' : DC::getApplication()->getName() . '/';
-        $fullUrl = $request->getProtocol() . '://' . $request->getHost() . '/'
+        $fullUrl = $request->getHost() . '/'
             . $applicationUrlPart
             . $relativeUri;
         $fullUrl = str_replace('//', '/', $fullUrl);
         $response = new Response();
         $response->setStatusCode(HttpStatus::HTTP_FOUND);
-        $response->setHeader('Location', $fullUrl);
+        $response->setHeader('Location', $request->getProtocol() . '://' . $fullUrl);
         if (headers_sent()) {
             DC::getLogger()->add('Cannot redirect to ' . $relativeUri);
         }
