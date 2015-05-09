@@ -41,10 +41,12 @@ class BaseController {
         if ($relativeUri == '/') {
             $relativeUri = '';
         }
-        $applicationUrlPart = DC::getApplication()->getName()  == 'frontend' ? '' : DC::getApplication()->getName() . '/';
+        $webRoot = DC::getRouter()->getWebRoot();
+        $applicationUrlPart =  ($webRoot ? $webRoot . '/' : '').
+                               (DC::getApplication()->getName()  == 'frontend' ? '' : DC::getApplication()->getName() . '/');
         $fullUrl = $request->getHost() . '/'
-            . $applicationUrlPart
-            . $relativeUri;
+                   . $applicationUrlPart
+                   . $relativeUri;
         $fullUrl = str_replace('//', '/', $fullUrl);
         $response = new Response();
         $response->setStatusCode(HttpStatus::HTTP_FOUND);
