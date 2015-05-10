@@ -46,13 +46,13 @@ class Application {
     }
 
     public function boot() {
-        $this->_config          = new YamlStorage($this->getRoot() . 'config.yml');
+        $this->_config = new YamlStorage($this->getRoot() . 'config.yml');
         if (!$this->_config->has('routes')) {
             throw new \Exception('Routes not found for app [' . $this->_name . '], in ' . $this->_config->getPath());
         }
         DC::getRouter()->addRoutes($this->_config->get('routes'));
         if ($events = $this->_config->get('events')) {
-            foreach($events as $event => $listener) {
+            foreach ($events as $event => $listener) {
                 DC::getEventDispatcher()->addEventListener($event, $listener);
             }
         }
@@ -76,7 +76,11 @@ class Application {
     }
 
     public function detectApplicationRoute() {
+        //if ($webRoot = DC::getProjectConfig('webRoot')) {
+        //    DC::getRouter()->setWebRoot($webRoot);
+        //}
         $route = DC::getRouter()->processRequest(Request::getIncomeRequest())->getCurrentRoute();
+        //vd($route);
         if ($route->isNotFound()) {
             DC::getEventDispatcher()->dispatchEvent('route.notFound');
             if (DC::getProjectConfig('devMode')) throw new \Exception('Route not found');
@@ -97,8 +101,16 @@ class Application {
         }
         $defaultAppName = DC::getProjectConfig('defaultApplication', 'frontend');
         $this->_name    = $defaultAppName;
-        $uri = (string)Request::getIncomeRequest()->getUri();
+        $uri            = (string)Request::getIncomeRequest()->getUri();
         $uriParts       = explode('/', $uri);
+        $webRoot        = DC::getRouter()->getWebRoot();
+
+        if ($webRoot) {
+            if (strpos($uri, substr($webRoot, 1)) === 0) {
+                $uriParts = explode('/', substr($uri, strlen($webRoot)));
+            }
+        }
+
         if (!empty($uriParts) && ((count($uriParts) > 0) && ($uriParts[0] != '/'))) {
             foreach ($appList as $appName => $appParams) {
                 if ($appName == $defaultAppName) continue;
@@ -106,7 +118,7 @@ class Application {
                 $appUri = !empty($appParams['uri']) ? $appParams['uri'] : $appName;
                 if (strpos($uriParts[0], $appUri) === 0) {
                     array_shift($uriParts);
-                    Request::getIncomeRequest()->setUri(implode('/', $uriParts));
+                    Request::getIncomeRequest()->setUri($webRoot . '/' . implode('/', $uriParts));
                     $this->_name = $appName;
                     break;
                 }
@@ -118,6 +130,7 @@ class Application {
                 'uri' => $this->_name,
             );
         }
+
         if (empty($this->_config['path'])) {
             $this->_config['path'] = Inflector::camelize($this->_name) . '/';
         }
@@ -161,7 +174,7 @@ class Application {
         return array(
             'kernel.ready' => array(
                 'listener' => array($this, 'run'),
-            )
+            ),
         );
     }
 
