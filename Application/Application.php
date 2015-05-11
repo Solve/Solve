@@ -105,7 +105,7 @@ class Application {
         $uriParts       = explode('/', $uri);
         $webRoot        = DC::getRouter()->getWebRoot();
 
-        if ($webRoot) {
+        if (strlen($webRoot) > 1) {
             if (strpos($uri, substr($webRoot, 1)) === 0) {
                 $uriParts = explode('/', substr($uri, strlen($webRoot)));
             }
@@ -117,7 +117,7 @@ class Application {
                 $appUri = !empty($appParams['uri']) ? $appParams['uri'] : $appName;
                 if (strpos($uriParts[0], $appUri) === 0) {
                     array_shift($uriParts);
-                    Request::getIncomeRequest()->setUri(($webRoot  ? $webRoot. '/' : '') . implode('/', $uriParts));
+                    Request::getIncomeRequest()->setUri((strlen($webRoot) > 1  ? $webRoot. '/' : '') . implode('/', $uriParts));
                     $this->_name = $appName;
                     break;
                 }
