@@ -110,7 +110,6 @@ class Application {
                 $uriParts = explode('/', substr($uri, strlen($webRoot)));
             }
         }
-
         if (!empty($uriParts) && ((count($uriParts) > 0) && ($uriParts[0] != '/'))) {
             foreach ($appList as $appName => $appParams) {
                 if ($appName == $defaultAppName) continue;
@@ -118,7 +117,7 @@ class Application {
                 $appUri = !empty($appParams['uri']) ? $appParams['uri'] : $appName;
                 if (strpos($uriParts[0], $appUri) === 0) {
                     array_shift($uriParts);
-                    Request::getIncomeRequest()->setUri($webRoot . '/' . implode('/', $uriParts));
+                    Request::getIncomeRequest()->setUri(($webRoot  ? $webRoot. '/' : '') . implode('/', $uriParts));
                     $this->_name = $appName;
                     break;
                 }
