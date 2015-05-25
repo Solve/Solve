@@ -21,8 +21,14 @@ class RemoteSessionManager {
 
     public function onKernelBoot() {
         $headers = getallheaders();
-        if (!empty($headers['Session-Token']) && strlen($headers['Session-Token']) == strlen('mapnsbmr9vvdn9ctgteiepuj90')) {
-            session_id($headers['Session-Token']);
+        $sessionHeader = '';
+        if (!empty($headers['Session-Token'])) {
+            $sessionHeader = $headers['Session-Token'];
+        } elseif (!empty($headers['session-token'])) {
+            $sessionHeader = $headers['session-token'];
+        }
+        if (!empty($sessionHeader) && strlen($sessionHeader) == strlen('mapnsbmr9vvdn9ctgteiepuj90')) {
+            session_id($sessionHeader);
         }
     }
 
