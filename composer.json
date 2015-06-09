@@ -18,17 +18,15 @@
   ],
   "require": {
     "php": ">=5.4.0",
-    "solve/di": "*",
-    "solve/slot": "*",
-    "solve/autoloader": "*",
-    "solve/eventdispatcher": ">=v1.0.2",
-    "solve/logger": ">=1.0.0",
-    "solve/database": "*",
-    "kevinlebrun/colors.php": "*"
-  },
-  "replace": {
-    "solve/config": "self.version",
-    "solve/router": "self.version"
+    "solve/config": "~1.*",
+    "solve/di": "~1.*",
+    "solve/router": "~1.*",
+    "solve/slot": "~1.*",
+    "solve/autoloader": "~1.*",
+    "solve/eventdispatcher": "~1.*",
+    "solve/logger": "~1.*",
+    "solve/database": "~1.*",
+    "kevinlebrun/colors.php": "~1.*"
   },
   "autoload": {
     "psr-4": {
