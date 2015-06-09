@@ -51,6 +51,9 @@ class PackagesConfigurator {
 
     public function getEventListeners() {
         return array(
+            'kernel.boot'       => array(
+                'listener' => array($this, 'onKernelReady')
+            ),
             'kernel.ready'       => array(
                 'listener' => array($this, 'onKernelReady')
             ),
