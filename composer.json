@@ -28,7 +28,7 @@
   },
   "replace": {
     "solve/config": "self.version",
-    "solve/router": "self.version",
+    "solve/router": "self.version"
   },
   "autoload": {
     "psr-4": {
