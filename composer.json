@@ -26,7 +26,10 @@
     "solve/eventdispatcher": "~1",
     "solve/logger": "~1",
     "solve/database": "~2",
-    "kevinlebrun/colors.php": "~0.4"
+    "kevinlebrun/colors.php": "~0.4",
+    "twig/twig": "~1.18",
+    "symfony/var-dumper": "~2.6",
+    "twig/extensions": "~1.2"
   },
   "autoload": {
     "psr-4": {
