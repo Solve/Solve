@@ -13,6 +13,8 @@ use Solve\Controller\ConsoleController;
 use Solve\Database\Models\DBOperator;
 use Solve\Database\Models\ModelOperator;
 use Solve\Kernel\DC;
+use Solve\Security\SecurityService;
+use Solve\Storage\ArrayStorage;
 use Solve\Utils\FSService;
 use Solve\Utils\Inflector;
 
@@ -31,17 +33,69 @@ class GenController extends ConsoleController {
     /**
      * Generates default database model structure
      */
-    public function modelAction() {
+    public function entityAction() {
         $name = ucfirst(Inflector::camelize($this->getFirstParamOrAsk('Enter model name')));
-        $path = DC::getEnvironment()->getUserClassesRoot() . 'db/';
+        //$name = 'Entities\Project';
+        $path = DC::getEnvironment()->getEntitiesRoot();
         $mo   = ModelOperator::getInstance($path);
         if ($mo->getModelStructure($name)) {
-            $this->warning('model ' . $name . ' is already exists', '~ model exists, skipping:');
-            return true;
+            $this->warning('entity ' . $name . ' is already exist', '~ model exist, skipping:');
+            return;
         }
-        $mo->generateBasicStructure($name);
-        $mo->saveModelStructure($name);
-        $this->notify($path . 'structure/' . $name . '.yml', '+ model created');
+
+
+        $structure = $mo->generateBasicStructure($name);
+        $structure = $this->askForFieldsAndUpdateStructure($name, $structure);
+        if ($this->confirm('Are you confirming generation', true)) {
+            $mo->setStructureForModel($name, $structure);
+            $mo->saveModelStructure($name);
+            $this->notify($mo->getStructurePathForModel($name)['path'], '+ model created');
+        }
+    }
+
+    public function fieldsAction() {
+        $name = ucfirst(Inflector::camelize($this->getFirstParamOrAsk('Enter model name')));
+        $path = DC::getEnvironment()->getEntitiesRoot();
+        $mo   = ModelOperator::getInstance($path);
+        if (!($structure = $mo->getModelStructure($name))) {
+            $this->warning(null, 'entity ' . $name . ' does not exist');
+            return;
+        }
+        $structure = $this->askForFieldsAndUpdateStructure($name, $structure);
+        if ($this->confirm('Are you confirming generation', true)) {
+            $mo->setStructureForModel($name, $structure);
+            $mo->saveModelStructure($name);
+            $this->notify($mo->getStructurePathForModel($name)['path'], '~ model updated');
+        }
+    }
+
+    public function userAction() {
+        $name = Inflector::camelize($this->getFirstParamOrAsk('Enter user name'));
+        $password = Inflector::camelize($this->getFirstParamOrAsk('Enter user password'));
+        $provider = new ArrayStorage(DC::getSecurityConfig('security/providers/users'));
+        $class = $provider->get('class');
+        $object = new $class();
+        $usernameMethod = 'set' . ucfirst($provider->get('username', 'login'));
+        $passwordMethod = 'set' . ucfirst($provider->get('password', 'password'));
+        $object->$usernameMethod($name);
+        $object->$passwordMethod(SecurityService::encodePassword($password, 'md5'));
+        $object->save();
+        $this->notify(null, 'User created');
+    }
+
+    private function askForFieldsAndUpdateStructure($name, $structure) {
+        $fields = array();
+        $this->notify(null, 'You can new enter fields for the '. $name . ' Entity (<light_gray> press [Enter] to finish </light_gray>)');
+        while ($answer = $this->ask('Enter new field name', null, true)) {
+            $type = $this->ask('Enter type of ' . $answer . ' (string, integer, boolean, array)');
+            $fields[$answer] = $type;
+        }
+        foreach($fields as $fieldName => $fieldType) {
+            $structure['columns'][$fieldName] = array(
+                'type' => $fieldType
+            );
+        }
+        return $structure;
     }
 
     /**
@@ -56,14 +110,51 @@ class GenController extends ConsoleController {
     }
 
     /**
+     * @changed
+     */
+    public function configAction() {
+        $projectName = DC::getProjectConfig('name');
+        $config = <<<TEXT
+<VirtualHost *:80>
+    DocumentRoot "/work/www/{$projectName}/web"
+    ServerName {$projectName}.local
+    ServerAlias www.{$projectName}.local
+</VirtualHost>
+
+TEXT;
+        $hosts = <<<TEXT
+127.0.0.1   {$projectName}.local
+::1         {$projectName}.local
+TEXT;
+
+        $this->notify('Here is your generated apache config:');
+        $this->warning(null, $config);
+        $this->notify('and hosts line:');
+        $this->warning(null, $hosts);
+
+        if ($this->confirm('Would you like to add hosts info to /etc/hosts?')) {
+            if (is_writable("/etc/hosts")) {
+                @copy('/etc/hosts', '/etc/~hosts');
+                $f = fopen("/etc/hosts", "a+");
+                fputs($f, "\n\n#added by Solve\n".$hosts);
+                fclose($f);
+            } else {
+                $this->error('File /etc/hosts is not writable, try run with sudo');
+            }
+            $this->notify(null, 'added.');
+        } else {
+            $this->warning(null, 'skipped.');
+        }
+    }
+
+    /**
      * Generates Slot template engine helper/block
      */
     public function helperAction() {
-        $name = ucfirst($this->getFirstParamOrAsk('Enter application\'s name'));;
+        $name = ucfirst($this->getFirstParamOrAsk('Enter helper\'s name'));;
         $path = DC::getEnvironment()->getUserClassesRoot() . 'helpers/';
         FSService::makeWritable($path);
         $this->safeCreateFromTemplate($path . $name . 'Block.php', '_helper');
-
     }
 
     /**

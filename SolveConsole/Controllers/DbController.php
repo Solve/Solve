@@ -92,7 +92,7 @@ class DbController extends ConsoleController {
     /**
      * Created database for profile default
      */
-    public function createDbAction() {
+    public function createAction() {
         $config = DC::getDatabaseConfig('profiles/default');
         DatabaseService::configProfile(array(
             'user'    => $config['user'],

@@ -17,6 +17,7 @@ class NotFoundController extends ConsoleController {
 
     public static function notFoundAction() {
         echo "command not found\n\n";
+        die();
         ControllerService::processControllerAction('IndexController', 'defaultAction');
     }
 

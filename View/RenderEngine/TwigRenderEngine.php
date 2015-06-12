@@ -39,7 +39,9 @@ class TwigRenderEngine extends BaseRenderEngine {
             'cache' => DC::getEnvironment()->getTmpRoot() . 'templates/' . DC::getApplication()->getName() . '/',
             'debug' => true,
         ));
-        $this->_twigEnvironment->addExtension(new TwigExtension());
+        if (class_exists('TwigExtension')) {
+            $this->_twigEnvironment->addExtension(new TwigExtension());
+        }
 
         $fs = new FSService();
 
