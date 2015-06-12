@@ -1,6 +1,8 @@
 <?php
 function vd() {
     $arguments = func_get_args();
+    call_user_func_array('dump', $arguments);
+    die();
     if (count($arguments)) {
         if (!empty($_SERVER['DOCUMENT_ROOT'])) {
             if(!headers_sent()) {
@@ -11,11 +13,11 @@ function vd() {
 
         $last = array_pop($arguments);
         foreach($arguments as $item) {
-            echoSingleVar($item);
+            dump($item);
         }
 
         if ($last !== '!@#') {
-            echoSingleVar($last);
+            dump($last);
             die();
         }
         if (!empty($_SERVER['DOCUMENT_ROOT'])) {
@@ -24,9 +26,9 @@ function vd() {
     }
 }
 
-function echoSingleVar($var) {
-    echo \Solve\Utils\Inflector::dumperGet($var) . "\n";
-}
+//function dump($var) {
+//    echo \Solve\Utils\Inflector::dumperGet($var) . "\n";
+//}
 
 function dumpAsString($var, $new_level = 0) {
     $res = '';
@@ -42,7 +44,7 @@ function dumpAsString($var, $new_level = 0) {
             $res .= "\n". str_repeat(" ", ($new_level+1)*4);
             $res .= dumpAsString($key, $new_level+1);
             $res .= ' => ';
-            $res .= dumpAsString($item, $new_level+1).',';
+            $res .= dumpAsString(is_object($item) ? get_class($item) : $item, $new_level+1).',';
         }
 
         $res .= "\n".str_repeat(" ", ($new_level)*4).')';

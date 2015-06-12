@@ -23,8 +23,12 @@ class ExceptionHandler {
     static public function exceptionHandler(\Exception $e) {
         $fullTrace = $e->getTrace();
 
-        if (is_callable(array($e, 'postAction'))) {
-            $e->postAction($e->getMessage(), $e->getCode());
+        try {
+            if (is_callable(array($e, 'postAction'), false)) {
+                $e->postAction($e->getMessage(), $e->getCode());
+            }
+        } catch (\Exception $e) {
+
         }
         if (!DC::getProjectConfig('devMode')) {
             DC::getLogger()->add('Exception: ' . $e->getMessage(), 'exception');
@@ -33,8 +37,8 @@ class ExceptionHandler {
         $content = '<div style="font-size: 13px; font-family: Consolas, Menlo, Monaco, monospace;white-space: pre-wrap;">';
 
         $htmlTrace = "<b>\nLast arguments(" . count($fullTrace[0]['args']) . "):</b>\n"
-            . dumpAsString($fullTrace[0]['args'])
-            . "<b>\n\nCall stack:</b>\n<table style='font-size: 13px;'>";
+                     . dumpAsString($fullTrace[0]['args'])
+                     . "<b>\n\nCall stack:</b>\n<table style='font-size: 13px;'>";
         foreach ($fullTrace as $item) {
             $info = self::compileShortCallee($item);
 
@@ -60,7 +64,7 @@ class ExceptionHandler {
 
         $res = array(
             'call' => $className . $item['type'] . $item['function'] . '()',
-            'file' => ''
+            'file' => '',
         );
 
         if (!empty($item['file'])) {
@@ -76,8 +80,8 @@ class ExceptionHandler {
     public function getEventListeners() {
         return array(
             'kernel.boot' => array(
-                'listener' => array($this, 'onKernelBoot')
-            )
+                'listener' => array($this, 'onKernelBoot'),
+            ),
         );
     }
 }
