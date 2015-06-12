@@ -46,11 +46,11 @@ class View extends \stdClass {
 
     protected        $_templatesPath;
     protected        $_templateName;
-    protected        $_layoutName      = '_layout';
-    protected        $_responseFormat  = self::FORMAT_HTML;
-    protected        $_renderEngineName    = 'Base';
-    protected        $_alreadyRendered = false;
-    protected static $_renderEngineInstances         = array();
+    protected        $_layoutName            = '_layout';
+    protected        $_responseFormat        = self::FORMAT_HTML;
+    protected        $_renderEngineName      = 'Base';
+    protected        $_alreadyRendered       = false;
+    protected static $_renderEngineInstances = array();
 
     public function __construct() {
         $this->_vars           = new ArrayStorage();
@@ -72,7 +72,7 @@ class View extends \stdClass {
             }
             if (($layout = $this->getLayoutTemplate())) {
                 $vars['innerTemplateContent'] = $this->fetchTemplate($templateName, $vars);
-                $templateName = $layout;
+                $templateName                 = $layout;
             }
         }
 
@@ -93,13 +93,14 @@ class View extends \stdClass {
     }
 
     protected function detectTemplate() {
-        $route = DC::getApplication()->getRoute();
+        $route  = DC::getApplication()->getRoute();
         $folder = Inflector::slugify(substr($route->getControllerName(), 0, -10));
         $action = Inflector::slugify(substr($route->getActionName(), 0, -6));
 
-        if (is_file($this->getTemplatesPath() . $folder . '/' . $action . '.slot')) {
+        $engineExtension = '.' . $this->_responseFormat . '.' . strtolower($this->getRenderEngineName());
+        if (is_file($this->getTemplatesPath() . $folder . '/' . $action . $engineExtension)) {
             $this->setTemplateName($folder . '/' . $action);
-        } elseif (is_file($this->getTemplatesPath() . $action . '.slot')) {
+        } elseif (is_file($this->getTemplatesPath() . $action . $engineExtension)) {
             $this->setTemplateName($action);
         } else {
             throw new \Exception('Cannot detect template:' . $folder . '/' . $action);
@@ -177,6 +178,16 @@ class View extends \stdClass {
 
     public function __set($key, $value) {
         $this->_vars->set($key, $value);
+        return $this;
+    }
+
+    public function setVars($vars = array(), $format = null) {
+        if (!is_array($vars)) {
+            vd($vars);
+        }
+        foreach($vars as $key=>$value) {
+            $this->setVar($key, $value);
+        }
         return $this;
     }
 

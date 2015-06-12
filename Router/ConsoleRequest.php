@@ -12,6 +12,8 @@ namespace Solve\Router;
 
 use Solve\EventDispatcher\BaseEvent;
 use Solve\Http\Request;
+use Solve\Kernel\DC;
+use Solve\Storage\YamlStorage;
 
 class ConsoleRequest {
 
@@ -35,6 +37,12 @@ class ConsoleRequest {
                 $request->getVars()->setDeepValue('params/'.$index++, trim($param));
             }
         }
+        $config = new YamlStorage(__DIR__ . '/../SolveConsole/config.yml');
+        foreach($config->get('routes') as $name => $info) {
+            $info['application'] = 'SolveConsole';
+            DC::getRouter()->addRoute($name, $info);
+        }
+
     }
 
     public function getEventListeners() {

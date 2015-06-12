@@ -18,3 +18,5 @@ response:
   className: 'Solve\Http\Response'
 exceptionHandler:
   className: 'Solve\Debug\ExceptionHandler'
+security:
+  className: 'Solve\Security\SecurityService'

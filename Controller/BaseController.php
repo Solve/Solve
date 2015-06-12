@@ -21,13 +21,13 @@ use Solve\View\View;
 
 class BaseController {
 
-    public $view;
-    public $router;
-    public $request;
+    private $view;
+    private $router;
+    private $request;
     /**
      * @var ApplicationRoute
      */
-    public $route;
+    private $route;
 
     public function __construct() {
         $this->view    = DC::getView();
@@ -42,7 +42,7 @@ class BaseController {
             $relativeUri = '';
         }
         $webRoot = DC::getRouter()->getWebRoot();
-        $applicationUrlPart =  ($webRoot !== "/" ? $webRoot . '/' : '').
+        $applicationUrlPart =  ($webRoot ? $webRoot . '/' : '').
                                (DC::getApplication()->getName()  == 'frontend' ? '' : DC::getApplication()->getName() . '/');
         $fullUrl = $request->getHost() . '/'
                    . $applicationUrlPart
@@ -73,6 +73,14 @@ class BaseController {
 
     public function getRequestData($path = null, $default = null) {
         return $this->route->getRequestVar($path, $default);
+    }
+
+    public function getView() {
+        return $this->view;
+    }
+
+    public function getRoute() {
+        return $this->route;
     }
 
     public function _preAction() {

@@ -59,6 +59,42 @@ class DocComment {
         return $comment;
     }
 
+    public static function parseConfigs($string) {
+        $comment = new DocComment();
+
+        $reg = '/@(?<key>Route|Template)\((?<params>.*)\)/';
+        $matches = array();
+        preg_match_all($reg, $string, $matches);
+        if (!empty($matches['key'])) {
+            foreach($matches['key'] as $index => $key) {
+                $sourceParams = explode(',', $matches['params'][$index]);
+                $params = array();
+                foreach($sourceParams as $param) {
+                    if (strpos($param, '=') === false) {
+                        $value = trim($param);
+                        if ($value[0] == '"' && $value[strlen($value) - 1] == '"') {
+                            $value = substr($value, 1, -1);
+                        }
+                        $params[] = $value;
+                    } else {
+                        $paramInfo = explode('=', $param);
+                        $value = trim($paramInfo[1]);
+                        if ($value[0] == '"' && $value[strlen($value) - 1] == '"') {
+                            $value = substr($value, 1, -1);
+                        }
+                        $params[trim($paramInfo[0])] = $value;
+                    }
+                }
+                $comment->addAnnotation($key, $params);
+            }
+        }
+        return $comment;
+    }
+
+    public function setAnnotation($key, $value) {
+        $this->_annotations->setDeepValue($key, $value);
+    }
+
     public function addAnnotation($key, $description) {
         $current = $this->_annotations->getDeepValue($key, array());
         $current[] = $description;

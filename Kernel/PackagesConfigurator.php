@@ -30,9 +30,13 @@ class PackagesConfigurator {
                 DatabaseService::configProfile($profileInfo, $profileName);
             }
             if (empty($request) || ($request && !$request->isConsoleRequest())) {
-                ModelOperator::getInstance(DC::getEnvironment()->getUserClassesRoot() . 'db/');
+                ModelOperator::getInstance(DC::getEnvironment()->getEntitiesRoot());
                 if ($databaseConfig->get('autoUpdateAll')) {
-                    ModelOperator::getInstance()->generateAllModelClasses()->updateDBForAllModels();;
+                    try {
+                        ModelOperator::getInstance()->generateAllModelClasses()->updateDBForAllModels();;
+                    } catch (\Exception $e) {
+                        echo $e->getMessage() ."\n\r";
+                    }
                 }
             }
         }
@@ -42,10 +46,13 @@ class PackagesConfigurator {
         ConfigService::setConfigsPath(DC::getEnvironment()->getConfigRoot());
         ConfigService::loadAllConfigs();
         DC::getLogger()->setLogsPath(DC::getEnvironment()->getTmpRoot() . 'log');
-        DC::getAutoloader()->registerSharedPath(DC::getEnvironment()->getUserClassesRoot(), true);
-        DC::getAutoloader()->registerSharedPath(DC::getEnvironment()->getUserClassesRoot() . 'db/bases');
-        DC::getAutoloader()->registerSharedPath(DC::getEnvironment()->getUserClassesRoot() . 'db/classes');
-        DC::getAutoloader()->registerNamespaceSharedPaths(DC::getEnvironment()->getUserClassesRoot() . 'classes/', true);
+        $entitiesRoot = DC::getEnvironment()->getEntitiesRoot();
+        DC::getAutoloader()->registerSharedPath($entitiesRoot, true);
+        DC::getAutoloader()->registerSharedPath($entitiesRoot . 'bases');
+        DC::getAutoloader()->registerSharedPath($entitiesRoot . 'classes');
+        DC::getAutoloader()->registerNamespaceSharedPaths(DC::getEnvironment()->getUserClassesRoot() . 'classes/');
+        DC::getAutoloader()->registerNamespaceSharedPaths($entitiesRoot . 'bases');
+        DC::getAutoloader()->registerNamespaceSharedPaths($entitiesRoot . 'classes');
         FilesAbility::setBaseStoreLocation(DC::getEnvironment()->getUploadRoot());
     }
 

@@ -31,6 +31,7 @@ use Solve\Storage\ArrayStorage;
  * @method string getUploadRoot()
  * @method $this setUploadRoot($path)
  * @method string getUserClassesRoot()
+ * @method string getEntitiesRoot()
  * @method $this setUserClassesRoot($path)
  *
  * @method string getTimezone()
@@ -70,10 +71,11 @@ class Environment {
 
     protected function updateFromProjectRoot() {
         $projectRoot = $this->getProjectRoot();
-        $this->_vars->setDeepValue('roots/application', $projectRoot . 'app/');
-        $this->_vars->setDeepValue('roots/config', $projectRoot . 'config/');
-        $this->_vars->setDeepValue('roots/tmp', $projectRoot . 'tmp/');
-        $this->_vars->setDeepValue('roots/userclasses', $projectRoot . 'src/');
+        $this->_vars->setDeepValue('roots/application', $projectRoot . 'modules/');
+        $this->_vars->setDeepValue('roots/config', $projectRoot . 'app/config/');
+        $this->_vars->setDeepValue('roots/tmp', $projectRoot . 'app/tmp/');
+        $this->_vars->setDeepValue('roots/userclasses', $projectRoot . 'app/src/');
+        $this->_vars->setDeepValue('roots/entities', $projectRoot . 'app/entities/');
         $this->_vars->setDeepValue('roots/web', $projectRoot . 'web/');
         $this->_vars->setDeepValue('roots/upload', $this->getWebRoot() . 'upload/');
     }

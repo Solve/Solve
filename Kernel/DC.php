@@ -18,6 +18,7 @@ use Solve\Http\Response;
 use Solve\Logger\Logger;
 use Solve\DependencyInjection\DependencyContainer;
 use Solve\Router\Router;
+use Solve\Security\SecurityService;
 use Solve\Storage\ArrayStorage;
 use Solve\View\View;
 
@@ -31,11 +32,13 @@ use Solve\View\View;
  * @method static Response getResponse() returns instance of response
  * @method static Logger getLogger() returns logger
  * @method static Router getRouter() returns router
+ * @method static SecurityService getSecurity() returns security service
  * @method static View getView()
  * @method static Autoloader getAutoloader() returns router
  * @method static EventDispatcher getEventDispatcher() returns main instance of event dispatcher
- * @method static Config getProjectConfig($deepKey = null, $defaultValue = null) returns logger
- * @method static Config getDatabaseConfig($deepKey = null) returns logger
+ * @method static Config getProjectConfig($deepKey = null, $defaultValue = null) returns config
+ * @method static Config getDatabaseConfig($deepKey = null, $defaultValue = null) returns config
+ * @method static Config getSecurityConfig($deepKey = null, $defaultValue = null) returns config
  *
  * @version 1.0
  * @author Alexandr Viniychuk <alexandr.viniychuk@icloud.com>

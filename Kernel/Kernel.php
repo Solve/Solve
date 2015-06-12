@@ -77,7 +77,8 @@ class Kernel {
 
         $this->_eventDispatcher = DC::getEventDispatcher();
         $this->_environment     = Environment::createFromContext();
-        DC::getAutoloader()->register(false)->registerNamespaceSharedPaths($this->_environment->getUserClassesRoot() . 'classes');
+        DC::getAutoloader()->register(false)->registerNamespaceSharedPaths($this->_environment->getUserClassesRoot(), true);
+        DC::getAutoloader()->register(false)->registerNamespaceSharedPaths($this->_environment->getEntitiesRoot(), true);
     }
 
 
@@ -105,6 +106,9 @@ class Kernel {
 
     public function boot() {
         $this->_eventDispatcher->dispatchEvent('kernel.boot');
+    }
+
+    public function process() {
         if (headers_sent()) {
             DC::getLogger()->add('Cannot start session, headers sent', Logger::NAMESPACE_KERNEL);
         } else {
@@ -112,9 +116,7 @@ class Kernel {
                 session_start();
             }
         }
-    }
 
-    public function process() {
         $this->_eventDispatcher->dispatchEvent('kernel.ready');
     }
 

@@ -12,13 +12,18 @@ namespace Solve\Application;
 
 use Solve\Config\Config;
 use Solve\Controller\ControllerService;
+use Solve\DocComment\DocComment;
+use Solve\Exceptions\RouteNotFoundException;
 use Solve\Http\Request;
 use Solve\Kernel\DC;
 use Solve\Kernel\Kernel;
 use Solve\Router\ApplicationRoute;
+use Solve\Router\Route;
 use Solve\Router\Router;
+use Solve\Security\SecurityService;
 use Solve\Storage\ArrayStorage;
 use Solve\Storage\YamlStorage;
+use Solve\Utils\FSService;
 use Solve\Utils\Inflector;
 use Solve\View\View;
 
@@ -28,6 +33,7 @@ class Application {
     protected $_namespace;
     protected $_root;
     protected $_controllersRoot;
+    protected $_isTerminated = false;
 
     /**
      * @var ApplicationRoute
@@ -38,104 +44,170 @@ class Application {
      */
     protected $_config;
 
+    /**
+     * @var ArrayStorage
+     */
+    protected $_routes;
+
     public function run() {
-        $this->detectApplication();
+        //$this->detectApplication();
         $this->boot();
+        $this->detectCurrentRoute();
         $this->configure();
         $this->process();
     }
 
     public function boot() {
-        $this->_config = new YamlStorage($this->getRoot() . 'config.yml');
-        if (!$this->_config->has('routes')) {
-            throw new \Exception('Routes not found for app [' . $this->_name . '], in ' . $this->_config->getPath());
-        }
-        DC::getRouter()->addRoutes($this->_config->get('routes'));
-        if ($events = $this->_config->get('events')) {
-            foreach ($events as $event => $listener) {
-                DC::getEventDispatcher()->addEventListener($event, $listener);
-            }
-        }
-        $this->detectApplicationRoute();
-    }
-
-    public function configure() {
-        DC::getView()->setTemplatesPath($this->getRoot() . 'Views/')->setRenderEngineName('Slot');
-
-    }
-
-    public function process() {
-        if (ControllerService::isControllerExists('ApplicationController')) {
-            ControllerService::getController('ApplicationController')->_preAction();
-        }
-        ControllerService::processControllerAction($this->_route->getControllerName(), $this->_route->getActionName());
-        if (ControllerService::isControllerExists('ApplicationController')) {
-            ControllerService::getController('ApplicationController')->_postAction();
-        }
-        DC::getView()->render();
-    }
-
-    public function detectApplicationRoute() {
-        //if ($webRoot = DC::getProjectConfig('webRoot')) {
-        //    DC::getRouter()->setWebRoot($webRoot);
+        //$this->_config = new YamlStorage($this->getRoot() . 'config.yml');
+        //if (!$this->_config->has('routes')) {
+        //    throw new \Exception('Routes not found for app [' . $this->_name . '], in ' . $this->_config->getPath());
         //}
-        $route = DC::getRouter()->processRequest(Request::getIncomeRequest())->getCurrentRoute();
-        //vd($route);
-        if ($route->isNotFound()) {
-            DC::getEventDispatcher()->dispatchEvent('route.notFound');
-            if (DC::getProjectConfig('devMode')) throw new \Exception('Route not found');
-        }
-        $this->_route = new ApplicationRoute($route);
-        return $this;
-    }
+        $this->_routes = new ArrayStorage();
 
-
-    public function detectApplication() {
-        DC::getEventDispatcher()->dispatchEvent('route.buildRequest', Request::getIncomeRequest());
-        /**
-         * @var ArrayStorage $appList
-         */
         $appList = DC::getProjectConfig('applications');
         if (empty($appList)) {
             throw new \Exception('Empty application list');
         }
-        $defaultAppName = DC::getProjectConfig('defaultApplication', 'frontend');
-        $this->_name    = $defaultAppName;
-        $uri            = (string)Request::getIncomeRequest()->getUri();
-        $uriParts       = explode('/', $uri);
-        $webRoot        = DC::getRouter()->getWebRoot();
 
-        if (strlen($webRoot) > 1) {
-            if (strpos($uri, substr($webRoot, 1)) === 0) {
-                $uriParts = explode('/', substr($uri, strlen($webRoot)));
-            }
-        }
-        if (!empty($uriParts) && ((count($uriParts) > 0) && ($uriParts[0] != '/'))) {
-            foreach ($appList as $appName => $appParams) {
-                if ($appName == $defaultAppName) continue;
+        foreach($appList as $appName => $appInfo) {
+            $appName = ucfirst($appName);
+            $appRootPath   = DC::getEnvironment()->getApplicationRoot() . $appName . '/';
+            $routingConfig = new YamlStorage($appRootPath . 'Config/routing.yml');
+            $config = $routingConfig->get('config', array());
+            DC::getAutoloader()->registerNamespacePath($appName, DC::getEnvironment()->getApplicationRoot());
+            if (empty($config['type']) || $config['type'] !== 'annotation') {
+                foreach($routingConfig->get('routes', array()) as $routeName => $routeInfo)  {
+                    $routeInfo['application'] = $appName;
+                    foreach($config as $key=>$value) {
+                        $routeInfo[$key] = $value;
+                    }
+                    $this->_routes[$routeName] = $routeInfo;
+                }
+            } else {
+                $files = FSService::getInstance()->in($appRootPath . 'Controllers')->find('*Controller.php', FSService::TYPE_ALL, FSService::HYDRATE_NAMES);
+                foreach($files as $file) {
+                    $controllerName = substr($file, 0, -4);
+                    $className = '\\' .$appName . '\\Controllers\\' . $controllerName;
+                    $reflection = new \ReflectionClass($className);
+                    foreach($reflection->getMethods() as $method) {
+                        if ($comment = $method->getDocComment()) {
+                            $comment = DocComment::parseConfigs($comment);
+                            if ($routes = $comment->getAnnotations('Route')) {
+                                if (!empty($routes['name'])) {
+                                    $routes = array($routes);
+                                }
+                                foreach($routes as $route) {
+                                    $routeInfo                     = array(
+                                        'pattern'     => $route[0],
+                                        'application' => $appName,
+                                        'controller'  => substr($controllerName, 0, -10),
+                                        'action'      => substr($method->getName(), 0, -6)
+                                    );
+                                    foreach($config as $key=>$value) {
+                                        $routeInfo[$key] = $value;
+                                    }
+                                    $this->_routes[$route['name']] = $routeInfo;
+                                }
 
-                $appUri = !empty($appParams['uri']) ? $appParams['uri'] : $appName;
-                if (strpos($uriParts[0], $appUri) === 0) {
-                    array_shift($uriParts);
-                    Request::getIncomeRequest()->setUri((strlen($webRoot) > 1  ? $webRoot. '/' : '') . implode('/', $uriParts));
-                    $this->_name = $appName;
-                    break;
+                            }
+                            //vd($comment, $this->_routes);
+                        }
+                    }
+                    //vd($reflection->getMethods());
                 }
             }
         }
-        $this->_config = DC::getProjectConfig('applications/' . $this->_name);
-        if (!is_array($this->_config)) {
-            $this->_config = array(
-                'uri' => $this->_name,
-            );
+        //vd($this->_routes->getArray());
+        DC::getRouter()->addRoutes($this->_routes->getArray());
+        if ($webRoot = DC::getProjectConfig('webRoot')) {
+            DC::getRouter()->setWebRoot($webRoot);
         }
+
+        SecurityService::boot();
+
+        //if ($events = $this->_config->get('events')) {
+        //    foreach ($events as $event => $listener) {
+        //        DC::getEventDispatcher()->addEventListener($event, $listener);
+        //    }
+        //}
+        //
+    }
+
+    public function configure() {
+        $viewEngineName = DC::getProjectConfig('view/engine', 'Slot');
+        DC::getView()
+            ->setTemplatesPath($this->getRoot() . 'Views/')
+            ->setRenderEngineName($viewEngineName)
+            ->setLayoutTemplate(null)
+        ;
+    }
+
+    public function process() {
+        SecurityService::processRoute($this->_route);
+        if ($this->isTerminated()) return true;
+
+        if (ControllerService::isControllerExists('ApplicationController')) {
+            ControllerService::getController('ApplicationController')->_preAction();
+        }
+        $vars = ControllerService::processControllerAction($this->_route->getControllerName(), $this->_route->getActionName());
+        if (ControllerService::isControllerExists('ApplicationController')) {
+            ControllerService::getController('ApplicationController')->_postAction();
+        }
+        if (is_array($vars)) {
+            DC::getView()->setVars($vars);
+        }
+        DC::getView()->render();
+    }
+
+    public function unauthenticatedAccess($event) {
+        $firewall = SecurityService::getInstance()->getActiveFirewall();
+
+        $route = DC::getRouter()->getRoute($firewall->getDeepValue('login/login_route'));
+
+        if (empty($route)) {
+            throw new RouteNotFoundException($firewall->getDeepValue('login/login_route'));
+        }
+        DC::getRouter()->setCurrentRoute($route)->getCurrentRequest()->setUri($route->buildUri(array()));
+        $route = new ApplicationRoute($route);
+        DC::getApplication()->setRoute($route);
+        ControllerService::processControllerAction($route->getControllerName(), $route->getActionName());
+    }
+
+    public function terminate() {
+        $this->_isTerminated = true;
+        DC::getView()->render();
+    }
+
+    public function isTerminated() {
+        return $this->_isTerminated;
+    }
+
+    public function detectCurrentRoute() {
+        DC::getAutoloader()->registerNamespacePath('SolveConsole', DC::getEnvironment()->getProjectRoot() . 'vendor/solve/solve/');
+        DC::getEventDispatcher()->dispatchEvent('route.buildRequest', Request::getIncomeRequest());
+
+        $route = DC::getRouter()->processRequest(Request::getIncomeRequest())->getCurrentRoute();
+        if ($route->isNotFound()) {
+            DC::getEventDispatcher()->dispatchEvent('route.notFound');
+            if (DC::getProjectConfig('devMode')) throw new \Exception('Route not found');
+        }
+        $this->processApplicationRoute($route);
+        return $this;
+    }
+
+
+    public function processApplicationRoute(Route $route) {
+        $this->_route = new ApplicationRoute($route);
+        $this->_name    = $this->_route->getVar('application');
+        //vd($this->_route, $this->_name);
+        //$uri            = (string)Request::getIncomeRequest()->getUri();
 
         if (empty($this->_config['path'])) {
             $this->_config['path'] = Inflector::camelize($this->_name) . '/';
         }
         $this->_namespace = Inflector::camelize($this->_name);
         $this->_root      = DC::getEnvironment()->getApplicationRoot() . $this->_config['path'];
-        DC::getAutoloader()->registerNamespacePath($this->_namespace, DC::getEnvironment()->getApplicationRoot());
+        //DC::getAutoloader()->registerNamespacePath($this->_namespace, DC::getEnvironment()->getApplicationRoot());
         ControllerService::setActiveNamespace($this->_namespace);
         return $this->_name;
     }
@@ -158,6 +230,10 @@ class Application {
         return $this->_config;
     }
 
+    public function getUser() {
+        return SecurityService::getInstance()->getUser();
+    }
+
     /**
      * @return ApplicationRoute
      */
@@ -173,6 +249,9 @@ class Application {
         return array(
             'kernel.ready' => array(
                 'listener' => array($this, 'run'),
+            ),
+            'security.unauthenticated' => array(
+                'listener' => array($this, 'unauthenticatedAccess')
             ),
         );
     }

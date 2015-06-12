@@ -37,19 +37,20 @@ class ControllerService {
     public static function safeCall($controllerName, $actionName) {
         $instance = static::getController($controllerName);
         if (method_exists($instance, $actionName)) {
-            $instance->{$actionName}();
+            return $instance->{$actionName}();
         } else {
             static::fireRouteNotFound($controllerName, $actionName);
         }
     }
 
     public static function processControllerAction($controllerName, $actionName) {
+        $result = array();
         if (static::isControllerExists($controllerName)) {
             if (empty(static::$_executedPreActions[$controllerName])) {
                 static::safeCall($controllerName, '_preAction');
                 static::$_executedPreActions[$controllerName] = true;
             }
-            static::safeCall($controllerName, $actionName);
+            $result = static::safeCall($controllerName, $actionName);
             if (empty(static::$_executedPostActions[$controllerName])) {
                 static::safeCall($controllerName, '_postAction');
                 static::$_executedPostActions[$controllerName] = true;
@@ -57,6 +58,7 @@ class ControllerService {
         } else {
             static::fireRouteNotFound($controllerName, $actionName);
         }
+        return $result;
     }
 
     protected static function fireRouteNotFound($controllerName, $actionName) {

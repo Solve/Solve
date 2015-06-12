@@ -60,7 +60,7 @@ class ConsoleController extends BaseController {
     }
 
     public function _preAction() {
-        if ($this->route->getVar('params/help')) {
+        if ($this->getRoute()->getVar('params/help')) {
             $this->printHelp();
             die();
         }
@@ -70,7 +70,7 @@ class ConsoleController extends BaseController {
     }
 
     protected function requireParametersCount($count) {
-        if (count($this->route->getVars()) < $count) {
+        if (count($this->getRoute()->getVars()) < $count) {
             $this->paramsError('This task require at least ' . $count . ' parameters!' . "%n");
             die();
         }
@@ -81,18 +81,21 @@ class ConsoleController extends BaseController {
         die();
     }
 
-    public function ask($message, $default = null) {
+    public function ask($message, $default = null, $allowEnter = false) {
         $res = null;
         while (!$res) {
             $this->writeln($message . ($default ? '(<bg_dark_gray>' . $default . '</bg_dark_gray>)' : '') . ': ', false);
             $res = $this->getInput();
+            if ($allowEnter && !$res) {
+                return $default;
+            }
             if ((!$res || ($res == "")) && $default) $res = $default;
         }
         return trim($res);
     }
 
     public function getFirstParamOrAsk($what) {
-        if (!($var = $this->route->getRequestVar('params/0'))) {
+        if (!($var = $this->getRoute()->getRequestVar('params/0'))) {
             while(!($var)) {$var = $this->ask($what);}
         }
         return $var;

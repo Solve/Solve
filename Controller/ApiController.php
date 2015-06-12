@@ -124,7 +124,6 @@ class ApiController extends BaseController {
             return true;
         }
         $this->view->setVar('isLoggedIn', false);
-        $this->view->setVar('data', $this->getRequestData('data', null));
         $this->returnErrorStatus('unauthorized', 401);
     }
 
