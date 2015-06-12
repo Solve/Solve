@@ -42,7 +42,7 @@ class BaseController {
             $relativeUri = '';
         }
         $webRoot = DC::getRouter()->getWebRoot();
-        $applicationUrlPart =  ($webRoot ? $webRoot . '/' : '').
+        $applicationUrlPart =  ($webRoot !== "/" ? $webRoot . '/' : '').
                                (DC::getApplication()->getName()  == 'frontend' ? '' : DC::getApplication()->getName() . '/');
         $fullUrl = $request->getHost() . '/'
                    . $applicationUrlPart
