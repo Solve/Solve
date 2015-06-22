@@ -39,11 +39,15 @@ class Application {
      * @var ApplicationRoute
      */
     protected $_route;
+
+    /**
+     * @var Request
+     */
+    protected $_request;
     /**
      * @var YamlStorage
      */
     protected $_config;
-
     /**
      * @var ArrayStorage
      */
@@ -69,41 +73,42 @@ class Application {
             throw new \Exception('Empty application list');
         }
 
-        foreach($appList as $appName => $appInfo) {
-            $appName = ucfirst($appName);
+        foreach ($appList as $appName => $appInfo) {
+            $appName       = ucfirst($appName);
             $appRootPath   = DC::getEnvironment()->getApplicationRoot() . $appName . '/';
             $routingConfig = new YamlStorage($appRootPath . 'Config/routing.yml');
-            $config = $routingConfig->get('config', array());
+            $config        = $routingConfig->get('config', array());
             DC::getAutoloader()->registerNamespacePath($appName, DC::getEnvironment()->getApplicationRoot());
+            DC::getAutoloader()->registerNamespaceSharedPaths($appRootPath, true);
             if (empty($config['type']) || $config['type'] !== 'annotation') {
-                foreach($routingConfig->get('routes', array()) as $routeName => $routeInfo)  {
+                foreach ($routingConfig->get('routes', array()) as $routeName => $routeInfo) {
                     $routeInfo['application'] = $appName;
-                    foreach($config as $key=>$value) {
+                    foreach ($config as $key => $value) {
                         $routeInfo[$key] = $value;
                     }
                     $this->_routes[$routeName] = $routeInfo;
                 }
             } else {
                 $files = FSService::getInstance()->in($appRootPath . 'Controllers')->find('*Controller.php', FSService::TYPE_ALL, FSService::HYDRATE_NAMES);
-                foreach($files as $file) {
+                foreach ($files as $file) {
                     $controllerName = substr($file, 0, -4);
-                    $className = '\\' .$appName . '\\Controllers\\' . $controllerName;
-                    $reflection = new \ReflectionClass($className);
-                    foreach($reflection->getMethods() as $method) {
+                    $className      = '\\' . $appName . '\\Controllers\\' . $controllerName;
+                    $reflection     = new \ReflectionClass($className);
+                    foreach ($reflection->getMethods() as $method) {
                         if ($comment = $method->getDocComment()) {
                             $comment = DocComment::parseConfigs($comment);
                             if ($routes = $comment->getAnnotations('Route')) {
                                 if (!empty($routes['name'])) {
                                     $routes = array($routes);
                                 }
-                                foreach($routes as $route) {
-                                    $routeInfo                     = array(
+                                foreach ($routes as $route) {
+                                    $routeInfo = array(
                                         'pattern'     => $route[0],
                                         'application' => $appName,
                                         'controller'  => substr($controllerName, 0, -10),
-                                        'action'      => substr($method->getName(), 0, -6)
+                                        'action'      => substr($method->getName(), 0, -6),
                                     );
-                                    foreach($config as $key=>$value) {
+                                    foreach ($config as $key => $value) {
                                         $routeInfo[$key] = $value;
                                     }
                                     $this->_routes[$route['name']] = $routeInfo;
@@ -124,7 +129,6 @@ class Application {
         }
 
         SecurityService::boot();
-
         //if ($events = $this->_config->get('events')) {
         //    foreach ($events as $event => $listener) {
         //        DC::getEventDispatcher()->addEventListener($event, $listener);
@@ -138,8 +142,7 @@ class Application {
         DC::getView()
             ->setTemplatesPath($this->getRoot() . 'Views/')
             ->setRenderEngineName($viewEngineName)
-            ->setLayoutTemplate(null)
-        ;
+            ->setLayoutTemplate(null);
     }
 
     public function process() {
@@ -162,10 +165,10 @@ class Application {
     public function unauthenticatedAccess($event) {
         $firewall = SecurityService::getInstance()->getActiveFirewall();
 
-        $route = DC::getRouter()->getRoute($firewall->getDeepValue('login/login_route'));
+        $route = DC::getRouter()->getRoute($firewall->getDeepValue('routes/login'));
 
         if (empty($route)) {
-            throw new RouteNotFoundException($firewall->getDeepValue('login/login_route'));
+            throw new RouteNotFoundException($firewall->getDeepValue('routes/login'));
         }
         DC::getRouter()->setCurrentRoute($route)->getCurrentRequest()->setUri($route->buildUri(array()));
         $route = new ApplicationRoute($route);
@@ -198,7 +201,7 @@ class Application {
 
     public function processApplicationRoute(Route $route) {
         $this->_route = new ApplicationRoute($route);
-        $this->_name    = $this->_route->getVar('application');
+        $this->_name  = $this->_route->getVar('application');
         //vd($this->_route, $this->_name);
         //$uri            = (string)Request::getIncomeRequest()->getUri();
 
@@ -207,6 +210,7 @@ class Application {
         }
         $this->_namespace = Inflector::camelize($this->_name);
         $this->_root      = DC::getEnvironment()->getApplicationRoot() . $this->_config['path'];
+        $this->_request   = Request::getIncomeRequest();
         //DC::getAutoloader()->registerNamespacePath($this->_namespace, DC::getEnvironment()->getApplicationRoot());
         ControllerService::setActiveNamespace($this->_namespace);
         return $this->_name;
@@ -241,17 +245,21 @@ class Application {
         return $this->_route;
     }
 
+    public function getRequest() {
+        return $this->_request;
+    }
+
     public function setRoute(ApplicationRoute $route) {
         $this->_route = $route;
     }
 
     public function getEventListeners() {
         return array(
-            'kernel.ready' => array(
+            'kernel.ready'             => array(
                 'listener' => array($this, 'run'),
             ),
             'security.unauthenticated' => array(
-                'listener' => array($this, 'unauthenticatedAccess')
+                'listener' => array($this, 'unauthenticatedAccess'),
             ),
         );
     }

@@ -29,7 +29,7 @@ class TwigRenderEngine extends BaseRenderEngine {
         $loader = new \Twig_Loader_Filesystem();
 
         $applications = DC::getProjectConfig('applications');
-        $loader->addPath(DC::getEnvironment()->getUserClassesRoot() . 'views/', 'Common');
+        $loader->addPath(DC::getEnvironment()->getUserClassesRoot() . 'views/', '__main__');
         foreach ($applications as $appName => $info) {
             $loader->addPath(DC::getEnvironment()->getApplicationRoot() . ucfirst($appName) . '/Views/', ucfirst($appName));
         }
@@ -39,8 +39,13 @@ class TwigRenderEngine extends BaseRenderEngine {
             'cache' => DC::getEnvironment()->getTmpRoot() . 'templates/' . DC::getApplication()->getName() . '/',
             'debug' => true,
         ));
-        if (class_exists('TwigExtension')) {
-            $this->_twigEnvironment->addExtension(new TwigExtension());
+        DC::getEventDispatcher()->dispatchEvent('view.configure');
+        $extensions = FSService::getInstance()->in(DC::getEnvironment()->getUserClassesRoot() . 'twig', true)->find('*.php', FSService::TYPE_FILE, FSService::HYDRATE_NAMES_PATH);
+        foreach($extensions as $ext => $path) {
+            $className = 'Solve\\' .substr($ext, 0, -4);
+            if (class_exists($className)) {
+                $this->_twigEnvironment->addExtension(new $className());
+            }
         }
 
         $fs = new FSService();

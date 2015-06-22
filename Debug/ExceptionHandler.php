@@ -25,7 +25,7 @@ class ExceptionHandler {
 
         try {
             if (is_callable(array($e, 'postAction'), false)) {
-                $e->postAction($e->getMessage(), $e->getCode());
+                //$e->postAction($e->getMessage(), $e->getCode());
             }
         } catch (\Exception $e) {
 

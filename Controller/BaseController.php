@@ -83,6 +83,10 @@ class BaseController {
         return $this->route;
     }
 
+    public function getRequest() {
+        return $this->request;
+    }
+
     public function _preAction() {
     }
 

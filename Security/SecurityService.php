@@ -93,21 +93,24 @@ class SecurityService {
             self::$_config = new ConfigStorage(DC::getSecurityConfig()->get('security'));
         }
         foreach (self::$_config->get('firewalls', array()) as $name => $info) {
-            if (!empty($info['login']['check'])) {
-                DC::getRouter()->addRoute($info['login']['check'], array(
+            $context = empty($info['context']) ? self::CONTEXT_DEFAULT : $info['context'];
+
+            if (!empty($info['routes']['check'])) {
+                DC::getRouter()->addRoute($info['routes']['check'], array(
                     'application' => 'Security',
                     'action'      => 'check',
-                    'pattern'     => self::getSecuredUrlForFirewall($info, $info['login']['check']),
+                    'context'     => $context,
+                    'pattern'     => self::getSecuredUrlForFirewall($info, $info['routes']['check']),
                 ));
             }
-            if (!empty($info['login']['logout'])) {
-                DC::getRouter()->addRoute($info['login']['logout'], array(
+            if (!empty($info['routes']['logout'])) {
+                DC::getRouter()->addRoute($info['routes']['logout'], array(
                     'application' => 'Security',
                     'action'      => 'logout',
-                    'pattern'     => self::getSecuredUrlForFirewall($info, $info['login']['logout']),
+                    'context'     => $context,
+                    'pattern'     => self::getSecuredUrlForFirewall($info, $info['routes']['logout']),
                 ));
             }
-
         }
     }
 
@@ -118,7 +121,7 @@ class SecurityService {
     public static function getFirewallForUrl($url, $action) {
         if ($url[0] !== '/') $url = '/' . $url;
         foreach (self::$_config->get('firewalls', array()) as $name => $info) {
-            if (!empty($info['login'][$action]) && $url == self::getSecuredUrlForFirewall($info, $info['login'][$action])) {
+            if (!empty($info['routes'][$action]) && $url == self::getSecuredUrlForFirewall($info, $info['routes'][$action])) {
                 return new ArrayStorage($info);
             }
         }
@@ -142,7 +145,6 @@ class SecurityService {
             self::boot();
         }
         $uri = $route->getRequest()->getUri();
-
         if ($route->getRequest()->getMethod() == Request::MODE_CONSOLE) {
             self::getInstance()->setSecurityToken(self::TOKEN_ANONYMOUS);
             return true;
