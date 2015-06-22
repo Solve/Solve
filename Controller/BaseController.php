@@ -71,8 +71,18 @@ class BaseController {
         }
     }
 
+    public function redirectToRoute($routeName, $vars = null) {
+        if ($route = DC::getRouter()->getRoute($routeName)) {
+            $this->router->redirectToRelativeUri(substr($route->buildUri($vars), 1));
+        }
+    }
+
     public function getRequestData($path = null, $default = null) {
         return $this->route->getRequestVar($path, $default);
+    }
+
+    public function get($serviceToken) {
+        return DC::get($serviceToken);
     }
 
     public function getView() {
