@@ -67,21 +67,21 @@ class ApiController extends BaseController {
 
     public function returnErrorStatus($message, $statusCode = 406, $required = false) {
         if ($required) {
-            $this->view->setVar('required', $required);
+            $this->getView()->setVar('required', $required);
         }
         $this->setError($message, $statusCode);
         $this->_postAction();
-        $this->view->render();
+        $this->getView()->render();
         die();
     }
 
     public function _postAction() {
-        $this->view->setVar('status', $this->_status);
+        $this->getView()->setVar('status', $this->_status);
         if ($this->_message) {
-            $this->view->setVar('message', $this->_message);
+            $this->getView()->setVar('message', $this->_message);
         }
         if (!$this->_data->isEmpty()) {
-            $this->view->setVar('data', $this->_data->getArray());
+            $this->getView()->setVar('data', $this->_data->getArray());
         }
     }
 
@@ -89,13 +89,13 @@ class ApiController extends BaseController {
         $paramsRequired = is_array($paramsNames) ? $paramsNames : ($paramsNames ? explode(',', $paramsNames) : array());
         $errors         = array();
         $params         = array();
-        $data           = $this->request->getVar('data');
+        $data           = $this->getRequestData('data');
 
         if (!empty($paramsRequired)) {
             foreach ($paramsRequired as $name) {
                 $name = trim($name);
                 if (!empty($data) && array_key_exists($name, $data)) {
-                    $params[$name] = $this->request->getVar('data/' . $name);
+                    $params[$name] = $this->getRequestData('data/' . $name);
                 } else {
                     $errors[] = $name;
                 }
@@ -108,7 +108,7 @@ class ApiController extends BaseController {
         foreach ($optionalNames as $name) {
             $name = trim($name);
             if (!empty($data) && array_key_exists($name, $data)) {
-                $params[$name] = $this->request->getVar('data/' . $name);
+                $params[$name] = $this->getRequestData('data/' . $name);
             }
         }
 
@@ -120,16 +120,16 @@ class ApiController extends BaseController {
     }
 
     public function requireAuthorization() {
-        if (SecurityService::getInstance($this->_securityServiceScope)->isAuthorized()) {
+        if (SecurityService::getInstance()->isAuthorized()) {
             return true;
         }
-        $this->view->setVar('isLoggedIn', false);
+        $this->getView()->setVar('isLoggedIn', false);
         $this->returnErrorStatus('unauthorized', 401);
     }
 
     public function getUser($field = null) {
         $this->requireAuthorization();
-        $user = SecurityService::getInstance($this->_securityServiceScope)->getUser();
+        $user = SecurityService::getInstance()->getUser();
         if (is_null($field)) {
             return $user;
         } else {
