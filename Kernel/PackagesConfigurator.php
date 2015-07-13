@@ -72,7 +72,7 @@ class PackagesConfigurator {
     }
 
     public function __destruct() {
-        if (DC::getRouter()->getCurrentRequest()->getMethod() == Request::MODE_CONSOLE) return true;
+        if (!DC::getRouter()->getCurrentRequest() || DC::getRouter()->getCurrentRequest()->getMethod() == Request::MODE_CONSOLE) return true;
         if (DC::getProjectConfig('dev/toolbar') != true) return true;
         $routeName = DC::getRouter()->getCurrentRoute()->getName();
         $css =<<<TEXT
