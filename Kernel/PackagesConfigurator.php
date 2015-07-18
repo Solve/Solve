@@ -52,8 +52,8 @@ class PackagesConfigurator {
         DC::getAutoloader()->registerSharedPath($entitiesRoot . 'bases');
         DC::getAutoloader()->registerSharedPath($entitiesRoot . 'classes');
         DC::getAutoloader()->registerNamespaceSharedPaths(DC::getEnvironment()->getUserClassesRoot() . 'classes/');
-        DC::getAutoloader()->registerNamespaceSharedPaths($entitiesRoot . 'bases');
-        DC::getAutoloader()->registerNamespaceSharedPaths($entitiesRoot . 'classes');
+        DC::getAutoloader()->registerNamespaceSharedPaths($entitiesRoot . 'bases', true);
+        DC::getAutoloader()->registerNamespaceSharedPaths($entitiesRoot . 'classes', true);
         FilesAbility::setBaseStoreLocation(DC::getEnvironment()->getUploadRoot());
     }
 
